@@ -1,0 +1,9 @@
+{
+  "name": "paasbox-rosier",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@mollie/api-client": "^3.7.0",
+    "node-fetch": "^3.3.2"
+  }
+}

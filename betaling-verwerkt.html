@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Betaling verwerkt · Ateliercuisine Rosier</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root { --goud:#a07840; --tekst:#1a1916; --muted:#7a7570; --rand:#e0dbd3; --licht:#f8f7f5; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Jost',sans-serif; background:var(--licht); color:var(--tekst); min-height:100vh; display:flex; align-items:center; justify-content:center; }
+  .box { background:white; border:1px solid var(--rand); padding:60px 48px; max-width:460px; width:90%; text-align:center; }
+  .icon { font-size:56px; margin-bottom:20px; }
+  .titel { font-family:'Cormorant Garamond',serif; font-size:34px; font-weight:300; margin-bottom:12px; }
+  .tekst { font-size:13px; color:var(--muted); line-height:1.8; margin-bottom:8px; }
+  .nr { font-size:13px; color:var(--muted); margin-bottom:28px; }
+  .nr strong { color:var(--goud); }
+  .btn { display:inline-block; background:var(--tekst); color:white; border:none; padding:13px 32px; font-size:13px; font-weight:500; cursor:pointer; font-family:'Jost',sans-serif; letter-spacing:.5px; text-decoration:none; }
+  .fout { color:#cc3333; }
+</style>
+</head>
+<body>
+<div class="box" id="inhoud">
+  <div class="icon" id="icon">⏳</div>
+  <div class="titel" id="titel">Betaling controleren...</div>
+  <div class="tekst" id="tekst">Even geduld, we verifiëren je betaling.</div>
+  <div class="nr" id="nr"></div>
+</div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+
+  async function controleer() {
+    if (!id) { toonFout(); return; }
+
+    try {
+      const resp = await fetch('/api/betaling-status?id=' + id);
+      const data = await resp.json();
+
+      if (data.status === 'paid') {
+        // Update lokale bestelling naar betaald
+        const DB_KEY = 'rosier_bestellingen';
+        const bestellingen = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+        const idx = bestellingen.findIndex(b => b.id === id);
+        if (idx !== -1) { bestellingen[idx].status = 'betaald'; localStorage.setItem(DB_KEY, JSON.stringify(bestellingen)); }
+
+        document.getElementById('icon').textContent = '🐣';
+        document.getElementById('titel').textContent = 'Bestelling bevestigd!';
+        document.getElementById('tekst').textContent = 'Bedankt voor je bestelling bij Ateliercuisine Rosier. Je ontvangt een bevestiging per e-mail.';
+        document.getElementById('nr').innerHTML = 'Bestelnummer: <strong>#' + id + '</strong>';
+        document.getElementById('inhoud').insertAdjacentHTML('beforeend', '<a class="btn" href="/">Terug naar de site</a>');
+
+      } else if (data.status === 'failed' || data.status === 'canceled' || data.status === 'expired') {
+        toonFout(data.status);
+      } else {
+        // Nog in behandeling — probeer opnieuw na 2 seconden
+        setTimeout(controleer, 2000);
+      }
+    } catch(e) {
+      toonFout();
+    }
+  }
+
+  function toonFout(status) {
+    const berichten = {
+      canceled: 'Je hebt de betaling geannuleerd.',
+      expired: 'De betaaltermijn is verlopen.',
+      failed: 'De betaling is mislukt.'
+    };
+    document.getElementById('icon').textContent = '❌';
+    document.getElementById('titel').textContent = 'Betaling niet geslaagd';
+    document.getElementById('tekst').innerHTML = '<span class="fout">' + (berichten[status] || 'Er is iets misgegaan.') + '</span>';
+    document.getElementById('tekst').insertAdjacentHTML('afterend', '<div class="tekst" style="margin-top:8px;">Probeer het opnieuw of neem contact op via paasbox2026@nielsrosier.nl</div>');
+    document.getElementById('inhoud').insertAdjacentHTML('beforeend', '<a class="btn" href="/" style="margin-top:20px;display:inline-block;">Opnieuw proberen</a>');
+  }
+
+  controleer();
+</script>
+</body>
+</html>

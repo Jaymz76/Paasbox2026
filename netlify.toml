@@ -1,0 +1,23 @@
+[build]
+  functions = "netlify/functions"
+  publish = "."
+
+[[redirects]]
+  from = "/api/betaling"
+  to = "/.netlify/functions/betaling"
+  status = 200
+
+[[redirects]]
+  from = "/api/webhook"
+  to = "/.netlify/functions/webhook"
+  status = 200
+
+[[redirects]]
+  from = "/api/betaling-status"
+  to = "/.netlify/functions/betaling-status"
+  status = 200
+
+[[redirects]]
+  from = "/betaling-verwerkt"
+  to = "/betaling-verwerkt.html"
+  status = 200

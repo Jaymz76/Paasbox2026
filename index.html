@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paasbrunch Box · Ateliercuisine Rosier</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --wit: #ffffff;
+    --licht: #f8f7f5;
+    --rand: #e0dbd3;
+    --tekst: #1a1916;
+    --muted: #7a7570;
+    --goud: #a07840;
+    --goud-licht: #f5edd8;
+    --groen: #3a5a40;
+    --groen-licht: #edf2ee;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Jost',sans-serif; background:var(--licht); color:var(--tekst); }
+
+  /* PROTOTYPE TABS */
+
+  .pagina { display:none; }
+  .pagina.actief { display:block; }
+
+  /* HEADER */
+  .site-header {
+    background:white;
+    border-bottom:1px solid var(--rand);
+    padding:18px 40px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .logo-img { height:52px; object-fit:contain; }
+  .header-label { font-size:10px; letter-spacing:2.5px; text-transform:uppercase; color:var(--muted); }
+
+  /* HERO */
+  .hero {
+    position:relative;
+    height:520px;
+    overflow:hidden;
+    display:flex; align-items:flex-end;
+  }
+  .hero-slides { position:absolute; inset:0; }
+  .hero-slide {
+    position:absolute; inset:0;
+    background-size:cover; background-position:center;
+    opacity:0; transition:opacity 1.2s ease;
+  }
+  .hero-slide.actief { opacity:1; }
+  .hero-slide::after {
+    content:'';
+    position:absolute; inset:0;
+    background:linear-gradient(to top, rgba(20,18,14,0.85) 0%, rgba(20,18,14,0.25) 60%, transparent 100%);
+  }
+  .hero-dots {
+    position:absolute; bottom:120px; right:40px;
+    display:flex; flex-direction:column; gap:6px; z-index:5;
+  }
+  .hero-dot {
+    width:3px; height:24px; border-radius:2px;
+    background:rgba(255,255,255,0.3); cursor:pointer; transition:background .3s;
+  }
+  .hero-dot.actief { background:#c8a96e; }
+  .hero-content {
+    position:relative; z-index:4;
+    padding:0 48px 44px;
+    color:white;
+  }
+  .hero-label { font-size:10px; letter-spacing:3px; text-transform:uppercase; color:#c8a96e; margin-bottom:10px; }
+  .hero-titel {
+    font-family:'Cormorant Garamond',serif;
+    font-size:56px; font-weight:300; line-height:1.05;
+    margin-bottom:14px;
+  }
+  .hero-sub { font-size:13px; color:rgba(255,255,255,0.65); max-width:460px; line-height:1.7; margin-bottom:24px; }
+  .prijs-tag {
+    display:inline-block;
+    border:1px solid rgba(200,169,110,0.6);
+    color:#c8a96e;
+    padding:8px 20px; border-radius:1px;
+    font-size:15px; font-weight:500; letter-spacing:1px;
+  }
+
+  /* FORMULIER BODY */
+  .bestel-body { max-width:720px; margin:0 auto; padding:44px 20px 120px; }
+
+  .sectie {
+    background:white; border:1px solid var(--rand);
+    padding:30px 32px; margin-bottom:16px;
+    animation: opkomen .35s ease both;
+  }
+  @keyframes opkomen { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:none} }
+
+  .sectie-kop { display:flex; align-items:center; gap:12px; margin-bottom:4px; }
+  .sectie-nr {
+    width:26px; height:26px; border-radius:50%;
+    background:var(--tekst); color:white;
+    font-size:11px; font-weight:600;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .sectie-titel { font-family:'Cormorant Garamond',serif; font-size:21px; font-weight:400; }
+  .sectie-sub { font-size:12px; color:var(--muted); margin-bottom:22px; padding-left:38px; }
+
+  .veld-rij { display:flex; gap:13px; margin-bottom:13px; }
+  .veld { flex:1; min-width:0; display:flex; flex-direction:column; gap:5px; }
+  .veld label { font-size:10px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); }
+  .veld input, .veld select {
+    border:1px solid var(--rand); padding:11px 13px;
+    font-size:13.5px; font-family:'Jost',sans-serif;
+    background:white; color:var(--tekst);
+    transition:border-color .2s, box-shadow .2s;
+    appearance:none; -webkit-appearance:none; border-radius:0;
+    width:100%; box-sizing:border-box;
+  }
+  @media(max-width:480px) {
+    .veld-rij { flex-direction:column; }
+  }
+  .veld input:focus, .veld select:focus {
+    outline:none; border-color:var(--goud);
+    box-shadow:0 0 0 3px rgba(160,120,64,0.1);
+  }
+  .select-wrap { position:relative; }
+  .select-wrap::after { content:'▾'; position:absolute; right:13px; top:50%; transform:translateY(-50%); color:var(--muted); pointer-events:none; font-size:11px; }
+
+  /* AANTAL */
+  .aantal-ctrl { display:flex; align-items:center; border:1px solid var(--rand); width:fit-content; }
+  .aantal-btn { width:46px; height:46px; border:none; background:var(--licht); font-size:20px; cursor:pointer; font-family:'Jost',sans-serif; transition:background .2s; color:var(--tekst); }
+  .aantal-btn:hover { background:var(--rand); }
+  .aantal-val { width:60px; height:46px; border:none; border-left:1px solid var(--rand); border-right:1px solid var(--rand); text-align:center; font-size:17px; font-weight:500; font-family:'Jost',sans-serif; background:white; }
+  .prijs-balk { margin-top:14px; padding:13px 16px; background:var(--goud-licht); border-left:3px solid var(--goud); display:flex; align-items:center; justify-content:space-between; font-size:13px; }
+  .prijs-balk strong { font-size:19px; color:var(--goud); font-weight:600; }
+
+  /* LEVERING */
+  .levering-opties { display:flex; flex-direction:column; gap:9px; }
+  .levering-optie {
+    display:flex; align-items:center; gap:14px;
+    padding:14px 16px; border:1px solid var(--rand);
+    cursor:pointer; transition:all .2s;
+  }
+  .levering-optie:hover { border-color:var(--goud); }
+  .levering-optie.geselecteerd { border-color:var(--goud); background:var(--goud-licht); }
+  .levering-optie input[type="radio"] { accent-color:var(--goud); width:15px; height:15px; }
+  .lev-naam { font-weight:500; font-size:14px; }
+  .lev-detail { font-size:11px; color:var(--muted); margin-top:2px; }
+  .lev-prijs { margin-left:auto; font-weight:600; font-size:13px; }
+  .lev-prijs.gratis { color:var(--groen); }
+
+  .locatie-blok {
+    margin-top:12px; padding:16px;
+    background:var(--groen-licht);
+    border:1px solid rgba(58,90,64,0.12);
+  }
+  .bezorg-blok {
+    margin-top:12px; padding:16px;
+    background:var(--goud-licht);
+    border:1px solid rgba(160,120,64,0.15);
+    display:none;
+  }
+
+  /* iDEAL */
+  .ideal-header { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+  .ideal-logo-txt { font-size:22px; font-weight:700; }
+  .ideal-logo-txt .i { color:#cc0066; }
+  .bank-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; margin-bottom:18px; }
+  .bank-btn {
+    border:1px solid var(--rand); padding:11px 6px;
+    text-align:center; font-size:11.5px; cursor:pointer;
+    transition:all .2s; background:white;
+    font-family:'Jost',sans-serif; color:var(--tekst);
+  }
+  .bank-btn:hover { border-color:#cc0066; background:#fff0f7; }
+  .bank-btn.aktief { border-color:#cc0066; background:#fff0f7; font-weight:600; }
+  .ideal-btn {
+    width:100%; background:#cc0066; color:white;
+    border:none; padding:17px; font-size:14.5px; font-weight:600;
+    cursor:pointer; font-family:'Jost',sans-serif;
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    transition:background .2s, transform .15s; letter-spacing:.5px;
+  }
+  .ideal-btn:hover { background:#a80055; transform:translateY(-1px); }
+
+  /* STICKY BALK */
+  .sticky-balk {
+    position:fixed; bottom:0; left:0; right:0;
+    background:var(--tekst); color:white;
+    padding:16px 40px;
+    display:flex; align-items:center; justify-content:space-between;
+    border-top:2px solid #c8a96e;
+    z-index:50;
+  }
+  .sticky-info { font-size:13px; color:rgba(255,255,255,0.6); }
+  .sticky-prijs { font-size:21px; font-weight:600; color:#c8a96e; }
+
+  /* OVERLAY */
+  .overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:100; align-items:center; justify-content:center; }
+  .overlay.zichtbaar { display:flex; }
+  .bevestig-box {
+    background:white; padding:52px 44px; max-width:420px; text-align:center;
+    box-shadow:0 32px 80px rgba(0,0,0,0.3);
+  }
+  .bevestig-icon { font-size:52px; margin-bottom:20px; }
+  .bevestig-titel { font-family:'Cormorant Garamond',serif; font-size:32px; font-weight:300; margin-bottom:12px; }
+  .bevestig-tekst { font-size:13px; color:var(--muted); line-height:1.8; margin-bottom:28px; }
+  .sluit-btn {
+    background:var(--tekst); color:white; border:none;
+    padding:13px 32px; font-size:13px; font-weight:500;
+    cursor:pointer; font-family:'Jost',sans-serif; letter-spacing:.5px;
+  }
+
+  /* ══ ADMIN ══ */
+  .admin-header {
+    background:var(--tekst); padding:20px 32px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .admin-logo { height:36px; object-fit:contain; filter:brightness(0) invert(1); opacity:.85; }
+  .admin-label { font-size:10px; color:#c8a96e; letter-spacing:2px; text-transform:uppercase; }
+  .admin-body { padding:28px 32px 48px; }
+
+  .kpi-rij { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
+  .kpi { background:white; border:1px solid var(--rand); padding:22px; position:relative; overflow:hidden; }
+  .kpi::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:var(--goud); }
+  .kpi-label { font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+  .kpi-waarde { font-family:'Cormorant Garamond',serif; font-size:38px; font-weight:400; line-height:1; }
+  .kpi-sub { font-size:11px; color:var(--muted); margin-top:5px; }
+  .kpi-icon { position:absolute; top:14px; right:14px; font-size:20px; opacity:.25; }
+
+  .dubbel { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:18px; }
+  .kaart { background:white; border:1px solid var(--rand); padding:22px; }
+  .kaart-titel { font-family:'Cormorant Garamond',serif; font-size:17px; margin-bottom:18px; padding-bottom:10px; border-bottom:1px solid var(--rand); }
+
+  .loc-item { margin-bottom:16px; }
+  .loc-rij { display:flex; justify-content:space-between; font-size:13px; margin-bottom:5px; }
+  .balk-bg { background:var(--licht); height:6px; border-radius:1px; overflow:hidden; }
+  .balk { height:100%; border-radius:1px; transition:width 1s ease; }
+
+  table { width:100%; border-collapse:collapse; }
+  thead th { text-align:left; font-size:10px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); padding:9px 11px; background:var(--licht); border-bottom:1px solid var(--rand); }
+  tbody tr { border-bottom:1px solid var(--rand); transition:background .15s; }
+  tbody tr:hover { background:var(--licht); }
+  tbody tr:last-child { border-bottom:none; }
+  td { padding:12px 11px; font-size:12.5px; vertical-align:middle; }
+
+  .badge { display:inline-block; padding:3px 9px; border-radius:20px; font-size:11px; font-weight:500; }
+  .badge-betaald { background:#e6f4ea; color:#1e7e34; }
+  .badge-wacht { background:#fff8e1; color:#b07d00; }
+  .badge-loc { background:var(--goud-licht); color:var(--goud); font-size:11px; padding:3px 8px; }
+  .badge-bezorg { background:var(--groen-licht); color:var(--groen); font-size:11px; padding:3px 8px; }
+
+  .actie-balk { background:var(--groen); color:white; padding:20px 24px; display:flex; align-items:center; justify-content:space-between; margin-top:18px; }
+  .actie-info strong { font-size:17px; display:block; margin-bottom:2px; }
+  .actie-info { font-size:13px; }
+  .actie-btns { display:flex; gap:9px; }
+  .actie-btn { background:rgba(255,255,255,0.12); color:white; border:1px solid rgba(255,255,255,0.22); padding:9px 16px; font-size:12px; cursor:pointer; font-family:'Jost',sans-serif; transition:background .2s; }
+  .actie-btn:hover { background:rgba(255,255,255,0.22); }
+  .actie-btn.prim { background:white; color:var(--groen); font-weight:600; }
+
+  .inhoud-btn {
+    background: rgba(255,255,255,0.12);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.4);
+    padding: 8px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    font-family: 'Jost', sans-serif;
+    transition: background 0.2s, border-color 0.2s;
+    border-radius: 1px;
+  }
+  .inhoud-btn:hover {
+    background: rgba(255,255,255,0.22);
+    border-color: rgba(255,255,255,0.7);
+  }
+
+  /* INHOUD PAGINA */
+  .menu-hero {
+    height: 380px;
+    position: relative;
+    overflow: hidden;
+    display: flex; align-items: flex-end;
+  }
+  .menu-hero-bg {
+    position: absolute; inset: 0;
+    background-size: cover; background-position: center top;
+  }
+  .menu-hero-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(20,18,14,0.80) 0%, rgba(20,18,14,0.15) 70%, transparent 100%);
+  }
+  .menu-hero-content {
+    position: relative; z-index: 2;
+    padding: 0 48px 40px;
+    color: white;
+  }
+  .menu-hero-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: #c8a96e; margin-bottom: 10px; }
+  .menu-hero-titel { font-family: 'Cormorant Garamond', serif; font-size: 48px; font-weight: 300; line-height: 1.1; }
+
+  .menu-body { max-width: 860px; margin: 0 auto; padding: 48px 20px 100px; }
+
+  .menu-intro {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  .menu-intro-titel {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 14px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 12px;
+  }
+  .menu-intro-sub {
+    font-size: 15px; color: var(--muted); line-height: 1.8; max-width: 560px; margin: 0 auto;
+  }
+
+  .gerecht-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--rand);
+    border: 1px solid var(--rand);
+    margin-bottom: 40px;
+  }
+  .gerecht {
+    background: white;
+    padding: 28px 30px;
+    position: relative;
+    transition: background 0.2s;
+  }
+  .gerecht:hover { background: var(--licht); }
+  .gerecht-nr {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 38px; font-weight: 300;
+    color: var(--rand);
+    position: absolute; top: 16px; right: 20px;
+    line-height: 1;
+  }
+  .gerecht-naam {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px; font-weight: 400;
+    color: var(--tekst);
+    margin-bottom: 6px;
+    line-height: 1.2;
+    padding-right: 32px;
+  }
+  .gerecht-detail {
+    font-size: 12px; color: var(--muted);
+    line-height: 1.6;
+  }
+  .gerecht.vol {
+    grid-column: span 2;
+    display: flex; align-items: flex-start; gap: 20px;
+    padding: 28px 30px;
+  }
+  .gerecht.vol .gerecht-naam { font-size: 22px; }
+
+  .foto-strip {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 8px;
+    margin-bottom: 40px;
+  }
+  .foto-strip img {
+    width: 100%; aspect-ratio: 4/3;
+    object-fit: cover;
+    display: block;
+  }
+
+  .bestel-cta {
+    background: var(--tekst);
+    padding: 40px;
+    text-align: center;
+    color: white;
+  }
+  .bestel-cta-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: #c8a96e; margin-bottom: 12px; }
+  .bestel-cta-titel { font-family: 'Cormorant Garamond', serif; font-size: 34px; font-weight: 300; margin-bottom: 8px; }
+  .bestel-cta-sub { font-size: 13px; color: rgba(255,255,255,0.55); margin-bottom: 28px; }
+  .bestel-cta-btn {
+    display: inline-block;
+    background: #c8a96e; color: var(--tekst);
+    border: none; padding: 15px 36px;
+    font-size: 14px; font-weight: 600;
+    cursor: pointer; font-family: 'Jost', sans-serif;
+    letter-spacing: 0.5px;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .bestel-cta-btn:hover { background: #a07840; transform: translateY(-1px); }
+
+</style>
+</head>
+<body>
+
+
+<!-- ════════════ BESTELPAGINA ════════════ -->
+<div class="pagina actief" id="pagina-bestel">
+
+  <div class="site-header">
+    <a href="https://www.nielsrosier.nl" target="_blank" rel="noopener" style="display:inline-block;"><img class="logo-img" src="logo.webp" alt="Ateliercuisine Rosier"></a>
+    <div class="header-label"></div>
+  </div>
+
+  <!-- Hero met foto's -->
+  <div class="hero">
+    <div class="hero-slides">
+      <div class="hero-slide actief" style="background-image:url('AI_tafel_1.jpeg"></div>
+      <div class="hero-slide" style="background-image:url('AI_tafel_2.jpeg"></div>
+      <div class="hero-slide" style="background-image:url('AI_tafel_3.jpeg"></div>
+    </div>
+    <div class="hero-dots">
+      <div class="hero-dot actief" onclick="naarSlide(0)"></div>
+      <div class="hero-dot" onclick="naarSlide(1)"></div>
+      <div class="hero-dot" onclick="naarSlide(2)"></div>
+    </div>
+    <div class="hero-content">
+      <div class="hero-label">Pasen 2026 · Beperkte beschikbaarheid</div>
+      <div class="hero-titel">Een zorgeloze<br>Paasbrunch</div>
+      <div class="hero-sub">Een zorgvuldig samengestelde brunchbox — vers bereid, vol seizoensproducten. Perfect voor een onvergetelijke paasmorgen.</div>
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+        <div class="prijs-tag">Box voor 2 personen — € 90,—</div>
+        <button class="inhoud-btn" onclick="document.querySelectorAll('.pagina').forEach(p=>p.classList.remove('actief'));document.getElementById('pagina-inhoud').classList.add('actief');document.querySelectorAll('.nav-tab').forEach((t,i)=>{t.classList.remove('active');if(i===1)t.classList.add('active')});window.scrollTo(0,0);">Inhoud box →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="bestel-body">
+
+    <!-- 1. Gegevens -->
+    <div class="sectie">
+      <div class="sectie-kop"><div class="sectie-nr">1</div><div class="sectie-titel">Jouw gegevens</div></div>
+      <div class="sectie-sub">We gebruiken deze gegevens uitsluitend voor jouw bestelling.</div>
+      <div class="veld-rij">
+        <div class="veld"><label>Voornaam</label><input id="invoerVoornaam" type="text" placeholder="Emma"></div>
+        <div class="veld"><label>Achternaam</label><input id="invoerAchternaam" type="text" placeholder="van der Berg"></div>
+      </div>
+      <div class="veld-rij">
+        <div class="veld"><label>E-mailadres</label><input id="invoerEmail" type="email" placeholder="emma@email.nl"></div>
+        <div class="veld"><label>Telefoon</label><input id="invoerTelefoon" type="tel" placeholder="06 — — — —"></div>
+      </div>
+    </div>
+
+    <!-- 2. Aantal -->
+    <div class="sectie">
+      <div class="sectie-kop"><div class="sectie-nr">2</div><div class="sectie-titel">Aantal boxen</div></div>
+      <div class="sectie-sub">Elke box is ruim gevuld voor 2 personen.</div>
+      <div class="aantal-ctrl">
+        <button class="aantal-btn" onclick="aantalWijzig(-1)">−</button>
+        <input class="aantal-val" id="aantalVal" value="1" readonly>
+        <button class="aantal-btn" onclick="aantalWijzig(1)">+</button>
+      </div>
+      <div class="prijs-balk">
+        <span id="aantalLabel">1 box × €90</span>
+        <strong id="totaalPrijs">€ 90,—</strong>
+      </div>
+    </div>
+
+    <!-- 3. Levering -->
+    <div class="sectie">
+      <div class="sectie-kop"><div class="sectie-nr">3</div><div class="sectie-titel">Ophalen of bezorgen?</div></div>
+      <div class="sectie-sub">Kies je voorkeur.</div>
+      <div class="levering-opties">
+        <label class="levering-optie geselecteerd" onclick="selecteerLevering('ophaal',this)">
+          <input type="radio" name="levering" value="ophaal" checked>
+          <div><div class="lev-naam">🏪 Ophalen op locatie</div><div class="lev-detail">Kies een van de drie ophaallocaties</div></div>
+          <div class="lev-prijs gratis">Gratis</div>
+        </label>
+        <label class="levering-optie" onclick="selecteerLevering('bezorg',this)">
+          <input type="radio" name="levering" value="bezorg">
+          <div><div class="lev-naam">🚚 Thuisbezorging</div><div class="lev-detail">Alleen regio Den Haag · + €10,—</div></div>
+          <div class="lev-prijs">+ €10,—</div>
+        </label>
+      </div>
+
+      <div class="locatie-blok" id="sectieOphaal">
+        <div class="veld">
+          <label>Kies ophaallocatie</label>
+          <div class="select-wrap">
+            <select id="invoerLocatie" onchange="updateSamenvatting()">
+              <option value="">— Selecteer een locatie —</option>
+              <option>📍 Flamant by Laura</option>
+              <option>📍 Haags Wijnhuis</option>
+              <option>📍 John's Inn</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="bezorg-blok" id="sectieBezorg">
+        <div class="veld-rij">
+          <div class="veld"><label>Straat + huisnummer</label><input id="invoerStraat" type="text" placeholder="Lindelaan 12"></div>
+        </div>
+        <div class="veld-rij">
+          <div class="veld" style="max-width:140px;"><label>Postcode</label><input id="invoerPostcode" type="text" placeholder="2512 AB"></div>
+          <div class="veld"><label>Stad</label><input id="invoerStad" type="text" placeholder="Den Haag"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. iDEAL -->
+    <div class="sectie">
+      <div class="sectie-kop"><div class="sectie-nr">4</div><div class="sectie-titel">Betalen via iDEAL</div></div>
+      <div class="sectie-sub">Veilig en direct betalen via jouw eigen bank.</div>
+      <div class="ideal-header">
+        <span style="font-size:26px;">💳</span>
+        <span class="ideal-logo-txt"><span class="i">i</span>DEAL</span>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Kies jouw bank:</div>
+      <div class="bank-grid">
+        <div class="bank-btn" onclick="selecteerBank(this)">ABN AMRO</div>
+        <div class="bank-btn" onclick="selecteerBank(this)">ING</div>
+        <div class="bank-btn" onclick="selecteerBank(this)">Rabobank</div>
+        <div class="bank-btn" onclick="selecteerBank(this)">SNS Bank</div>
+        <div class="bank-btn" onclick="selecteerBank(this)">ASN Bank</div>
+        <div class="bank-btn" onclick="selecteerBank(this)">Triodos</div>
+        <div class="bank-btn" onclick="selecteerBank(this)">RegioBank</div>
+        <div class="bank-btn" onclick="selecteerBank(this)">Knab</div>
+      </div>
+      <button class="ideal-btn" onclick="bestellingPlaatsen()">
+        🔒 Betaal nu <span id="idealBedrag">€ 90,—</span> via iDEAL
+      </button>
+      <div style="font-size:11px;color:var(--muted);margin-top:11px;text-align:center;">Na betaling ontvang je een bevestiging per e-mail · Beveiligd via SSL</div>
+    </div>
+
+  </div><!-- /bestel-body -->
+
+  <div class="sticky-balk">
+    <div>
+      <div class="sticky-info" id="samenInfo">1 paasbox · Ophalen</div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:1px;letter-spacing:1px;text-transform:uppercase;">Ateliercuisine Rosier · Pasen 2026</div>
+    </div>
+    <div class="sticky-prijs" id="samenPrijs">€ 90,—</div>
+  </div>
+
+</div><!-- /bestelpagina -->
+
+
+<!-- ════════════ INHOUD BOX ════════════ -->
+<div class="pagina" id="pagina-inhoud">
+
+  <div class="site-header">
+    <a href="https://www.nielsrosier.nl" target="_blank" rel="noopener" style="display:inline-block;"><img class="logo-img" src="logo.webp" alt="Ateliercuisine Rosier"></a>
+    <div class="header-label">Paasbrunch Box · Inhoud</div>
+  </div>
+
+  <div class="menu-hero">
+    <div class="menu-hero-bg" style="background-image:url('AI_tafel_3.jpeg"></div>
+    <div class="menu-hero-content">
+      <div class="menu-hero-label">Pasen 2026 · Ateliercuisine Rosier</div>
+      <div class="menu-hero-titel">Wat zit er<br>in de box?</div>
+    </div>
+  </div>
+
+  <div class="menu-body">
+
+    <div class="menu-intro">
+      <div class="menu-intro-titel">Het menu</div>
+      <div class="menu-intro-sub">Elke paasbox is met zorg samengesteld door Atelier Cuisine Rosier — vers bereid, vol seizoensproducten en klaar om thuis te genieten.</div>
+    </div>
+
+    <div class="foto-strip">
+      <img src="AI_tafel_1.jpeg" alt="Paasbrunch tafel">
+      <img src="AI_tafel_2.jpeg" alt="Paasbrunch gerechten">
+      <img src="AI_tafel_3.jpeg" alt="Paasbrunch sfeer">
+    </div>
+
+    <div class="gerecht-grid">
+
+      <div class="gerecht" style="grid-column:span 2;">
+        <div class="gerecht-nr">01</div>
+        <div class="gerecht-naam">Baguette</div>
+        <div class="gerecht-detail">Beenham | Asperge aardappelsalade</div>
+      </div>
+
+      <div class="gerecht">
+        <div class="gerecht-nr">02</div>
+        <div class="gerecht-naam">Brioche</div>
+        <div class="gerecht-detail">Gerookte zalm | Haringkaviaar crème fraîche</div>
+      </div>
+
+      <div class="gerecht">
+        <div class="gerecht-nr">03</div>
+        <div class="gerecht-naam">Gevuld paasei</div>
+        <div class="gerecht-detail">Truffel eiersalade</div>
+      </div>
+
+      <div class="gerecht">
+        <div class="gerecht-nr">04</div>
+        <div class="gerecht-naam">Eenden rillette</div>
+        <div class="gerecht-detail">Appel-uienchutney | Krokant rozijnenbrood</div>
+      </div>
+
+      <div class="gerecht">
+        <div class="gerecht-nr">05</div>
+        <div class="gerecht-naam">Matzes</div>
+        <div class="gerecht-detail">Luchtige gezouten boter | Witte basterd suiker</div>
+      </div>
+
+      <div class="gerecht vol">
+        <div>
+          <div class="gerecht-nr" style="position:static;font-size:28px;margin-bottom:6px;">06</div>
+          <div class="gerecht-naam">Aspergesoep</div>
+          <div class="gerecht-detail">Eekhoorntjesbrood ravioli | Paling | Hollandse garnaaltjes | Daslook</div>
+        </div>
+      </div>
+
+      <div class="gerecht">
+        <div class="gerecht-nr">07</div>
+        <div class="gerecht-naam">Yoghurt panna cotta</div>
+        <div class="gerecht-detail">Verveine | Honing crumble</div>
+      </div>
+
+      <div class="gerecht">
+        <div class="gerecht-nr">08</div>
+        <div class="gerecht-naam">Pavlova</div>
+        <div class="gerecht-detail">Rabarber | Aardbei | Munt</div>
+      </div>
+
+      <div class="gerecht">
+        <div class="gerecht-nr">09</div>
+        <div class="gerecht-naam">Nougat</div>
+        <div class="gerecht-detail">Huisgemaakt</div>
+      </div>
+
+      <div class="gerecht">
+        <div class="gerecht-nr">10</div>
+        <div class="gerecht-naam">Verse jus d'orange</div>
+        <div class="gerecht-detail">Vers geperst</div>
+      </div>
+
+      <div class="gerecht" style="grid-column:span 2;">
+        <div class="gerecht-nr">11</div>
+        <div class="gerecht-naam">Half flesje bubbels</div>
+        <div class="gerecht-detail">Top selectie van het Haags Wijnhuis</div>
+      </div>
+
+    </div>
+
+    <div class="bestel-cta">
+      <div class="bestel-cta-label">Klaar om te bestellen?</div>
+      <div class="bestel-cta-titel">Reserveer jouw paasbox</div>
+      <div class="bestel-cta-sub">€ 90,— per box · Beperkte beschikbaarheid · Pasen 2026</div>
+      <button class="bestel-cta-btn" onclick="document.querySelectorAll('.pagina').forEach(p=>p.classList.remove('actief'));document.getElementById('pagina-bestel').classList.add('actief');document.querySelectorAll('.nav-tab').forEach((t,i)=>{t.classList.remove('active');if(i===0)t.classList.add('active')});window.scrollTo(0,0);">Bestel nu →</button>
+    </div>
+
+  </div>
+</div><!-- /inhoud -->
+
+<!-- ════════════ ADMIN ════════════ -->
+<div class="pagina" id="pagina-admin">
+  <div class="admin-header">
+    <img class="admin-logo" src="logo.webp" alt="Rosier">
+    <div class="admin-label">Admin · Paasbox 2026</div>
+  </div>
+
+  <div class="admin-body">
+    <div class="kpi-rij">
+      <div class="kpi"><div class="kpi-icon">📦</div><div class="kpi-label">Totaal boxen</div><div class="kpi-waarde" id="kpiBoxen">0</div><div class="kpi-sub">Bevestigd</div></div>
+      <div class="kpi"><div class="kpi-icon">💶</div><div class="kpi-label">Omzet</div><div class="kpi-waarde" id="kpiOmzet">€ 0</div><div class="kpi-sub">Incl. bezorgtoeslag</div></div>
+      <div class="kpi"><div class="kpi-icon">🚚</div><div class="kpi-label">Bezorging</div><div class="kpi-waarde" id="kpiBezorg">0</div><div class="kpi-sub">Thuisbezorging</div></div>
+      <div class="kpi"><div class="kpi-icon">🛒</div><div class="kpi-label">Bestellingen</div><div class="kpi-waarde" id="kpiBestellingen">0</div><div class="kpi-sub">Geplaatst</div></div>
+    </div>
+
+    <div class="dubbel">
+      <div class="kaart">
+        <div class="kaart-titel">📍 Boxen per locatie</div>
+        <div id="locatieStats"><div style="color:var(--muted);font-size:12px;">Nog geen bestellingen.</div></div>
+      </div>
+      <div class="kaart">
+        <div class="kaart-titel">📈 Bestellingen deze week</div>
+        <div id="weekChart" style="display:flex;align-items:flex-end;gap:5px;height:90px;"></div>
+        <div style="font-size:10px;color:var(--muted);margin-top:8px;text-align:center;" id="weekLabel">Geen data</div>
+      </div>
+    </div>
+
+      <div class="kaart" style="margin-bottom:0;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div class="kaart-titel" style="margin-bottom:0;padding-bottom:0;border:none;">📋 Bestellingen</div>
+        <div style="display:flex;gap:8px;">
+          <button style="border:1px solid var(--rand);padding:6px 13px;font-size:11px;cursor:pointer;background:white;font-family:'Jost',sans-serif;" onclick="exporteerCSV()">⬇ CSV Export</button>
+          <button style="border:1px solid #ffcccc;padding:6px 13px;font-size:11px;cursor:pointer;background:#fff5f5;color:#cc3333;font-family:'Jost',sans-serif;" onclick="leegmakenBevestig()">🗑 Database leegmaken</button>
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>#</th><th>Naam</th><th>Boxen</th><th>Levering</th><th>Locatie / Adres</th><th>Bedrag</th><th>Status</th><th>Datum</th></tr></thead>
+        <tbody id="bestellingenTabel">
+        </tbody>
+      </table>
+      <div id="geenBestellingen" style="text-align:center;padding:32px;color:var(--muted);font-size:13px;display:none;">
+        Nog geen bestellingen geplaatst.
+      </div>
+    </div>
+
+    <div class="actie-balk">
+      <div class="actie-info"><strong id="actieTitel">🥚 Paasoverzicht</strong><span id="actieInfo">0 boxen · laden...</span></div>
+      <div class="actie-btns">
+        <button class="actie-btn" onclick="exporteerCSV()">⬇ Download overzicht</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bevestiging -->
+<div class="overlay" id="overlay">
+  <div class="bevestig-box">
+    <div class="bevestig-icon">🐣</div>
+    <div class="bevestig-titel">Bestelling geplaatst!</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:8px;letter-spacing:1px;">Bestelnummer <strong id="bevestigNummer">#001</strong></div>
+    <div class="bevestig-tekst">Bedankt voor je bestelling bij Ateliercuisine Rosier.<br>Je ontvangt een bevestiging per e-mail met alle details.</div>
+    <button class="sluit-btn" onclick="sluitOverlay()">Sluiten</button>
+  </div>
+</div>
+
+<script>
+  let aantal = 1, leveringType = 'ophaal';
+  const PRIJS = 90, BEZORG = 10;
+  let slideIndex = 0;
+
+  // ══════════════════════════════
+  //  DATABASE (localStorage)
+  // ══════════════════════════════
+  const DB_KEY = 'rosier_bestellingen';
+
+  function dbLees() {
+    try { return JSON.parse(localStorage.getItem(DB_KEY)) || []; }
+    catch(e) { return []; }
+  }
+
+  function dbSla(bestellingen) {
+    localStorage.setItem(DB_KEY, JSON.stringify(bestellingen));
+  }
+
+  function dbVoegToe(bestelling) {
+    const bestellingen = dbLees();
+    bestellingen.unshift(bestelling); // nieuwste bovenaan
+    dbSla(bestellingen);
+    return bestelling.id;
+  }
+
+  function genereerId() {
+    const bestellingen = dbLees();
+    return String(bestellingen.length + 1).padStart(3, '0');
+  }
+
+  // ══════════════════════════════
+  //  SLIDESHOW
+  // ══════════════════════════════
+  function naarSlide(i) {
+    const slides = document.querySelectorAll('.hero-slide');
+    const dots = document.querySelectorAll('.hero-dot');
+    slides[slideIndex].classList.remove('actief');
+    dots[slideIndex].classList.remove('actief');
+    slideIndex = i;
+    slides[slideIndex].classList.add('actief');
+    dots[slideIndex].classList.add('actief');
+  }
+  setInterval(() => naarSlide((slideIndex + 1) % document.querySelectorAll('.hero-slide').length), 4500);
+
+  // ══════════════════════════════
+  //  NAVIGATIE
+  // ══════════════════════════════
+  function toonPagina(id, el) {
+    document.querySelectorAll('.pagina').forEach(p => p.classList.remove('actief'));
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('pagina-' + id).classList.add('actief');
+    el.classList.add('active');
+    window.scrollTo(0, 0);
+    if (id === 'admin') laadAdmin();
+  }
+
+  if (window.location.search.includes('admin') || window.location.hash.includes('admin')) {
+    const adminTab = document.getElementById('admin-tab');
+    if (adminTab) adminTab.style.display = 'block';
+    toonPaginaBtn('admin');
+  }
+
+  function toonPaginaBtn(id) {
+    const map = {'bestel': 0, 'inhoud': 1, 'admin': 2};
+    document.querySelectorAll('.pagina').forEach(p => p.classList.remove('actief'));
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('pagina-' + id).classList.add('actief');
+    document.querySelectorAll('.nav-tab')[map[id]].classList.add('active');
+    window.scrollTo(0, 0);
+    if (id === 'admin') laadAdmin();
+  }
+
+  // ══════════════════════════════
+  //  FORMULIER LOGICA
+  // ══════════════════════════════
+  function aantalWijzig(d) {
+    aantal = Math.max(1, aantal + d);
+    document.getElementById('aantalVal').value = aantal;
+    updateSamenvatting();
+  }
+
+  function selecteerLevering(type, el) {
+    leveringType = type;
+    document.querySelectorAll('.levering-optie').forEach(o => o.classList.remove('geselecteerd'));
+    el.classList.add('geselecteerd');
+    document.getElementById('sectieOphaal').style.display = type === 'ophaal' ? 'block' : 'none';
+    document.getElementById('sectieBezorg').style.display = type === 'bezorg' ? 'block' : 'none';
+    updateSamenvatting();
+  }
+
+  function updateSamenvatting() {
+    const extra = leveringType === 'bezorg' ? BEZORG : 0;
+    const totaal = aantal * PRIJS + extra;
+    const fmt = '\u20ac ' + totaal.toLocaleString('nl-NL') + ',\u2014';
+    document.getElementById('totaalPrijs').textContent = fmt;
+    document.getElementById('aantalLabel').textContent = aantal + ' box' + (aantal > 1 ? 'en' : '') + ' \u00d7 \u20ac' + PRIJS + (extra ? ' + bezorging' : '');
+    document.getElementById('samenPrijs').textContent = fmt;
+    document.getElementById('samenInfo').textContent = aantal + ' paasbox' + (aantal > 1 ? 'en' : '') + ' \u00b7 ' + (leveringType === 'ophaal' ? 'Ophalen' : 'Bezorging');
+    document.getElementById('idealBedrag').textContent = fmt;
+  }
+
+  function selecteerBank(el) {
+    document.querySelectorAll('.bank-btn').forEach(b => b.classList.remove('aktief'));
+    el.classList.add('aktief');
+  }
+
+  // ══════════════════════════════
+  //  BESTELLING OPSLAAN
+  // ══════════════════════════════
+  async function bestellingPlaatsen() {
+    const voornaam = document.getElementById('invoerVoornaam').value.trim();
+    const achternaam = document.getElementById('invoerAchternaam').value.trim();
+    const email = document.getElementById('invoerEmail').value.trim();
+    const telefoon = document.getElementById('invoerTelefoon').value.trim();
+    const locatie = document.getElementById('invoerLocatie').value;
+
+    // Validatie
+    if (!voornaam || !achternaam) { alert('Vul je naam in.'); return; }
+    if (!email || !email.includes('@')) { alert('Vul een geldig e-mailadres in.'); return; }
+    if (leveringType === 'ophaal' && !locatie) { alert('Kies een ophaallocatie.'); return; }
+
+    let adres = '';
+    if (leveringType === 'bezorg') {
+      const straat = document.getElementById('invoerStraat').value.trim();
+      const postcode = document.getElementById('invoerPostcode').value.trim();
+      const stad = document.getElementById('invoerStad').value.trim();
+      if (!straat || !postcode || !stad) { alert('Vul je bezorgadres in.'); return; }
+      adres = straat + ', ' + postcode + ' ' + stad;
+    }
+
+    const extra = leveringType === 'bezorg' ? BEZORG : 0;
+    const totaal = aantal * PRIJS + extra;
+    const nu = new Date();
+    const datumStr = nu.getDate() + ' ' + ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'][nu.getMonth()];
+    const bestellingId = genereerId();
+
+    // Bestelling alvast lokaal opslaan met status 'in afwachting'
+    const bestelling = {
+      id: bestellingId,
+      voornaam, achternaam,
+      naam: voornaam + ' ' + achternaam,
+      email, telefoon,
+      aantal,
+      leveringType,
+      locatie: leveringType === 'ophaal' ? locatie.replace('\u{1F4CD} ','') : '\u{1F69A} Bezorging',
+      adres,
+      bedrag: totaal,
+      status: 'wacht',
+      datum: datumStr,
+      timestamp: nu.toISOString()
+    };
+    dbVoegToe(bestelling);
+
+    // Betaalknop uitschakelen + laden tonen
+    const btn = document.querySelector('.ideal-btn');
+    btn.disabled = true;
+    btn.textContent = '\u23F3 Betalingsverzoek aanmaken...';
+
+    try {
+      const resp = await fetch('/api/betaling', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bestellingId,
+          naam: bestelling.naam,
+          email, telefoon,
+          aantal,
+          leveringType,
+          locatie: bestelling.locatie,
+          adres,
+          bedrag: totaal
+        })
+      });
+
+      const data = await resp.json();
+      if (!resp.ok || !data.checkoutUrl) throw new Error(data.error || 'Onbekende fout');
+
+      // Redirect naar Mollie betaalpagina
+      window.location.href = data.checkoutUrl;
+
+    } catch (err) {
+      btn.disabled = false;
+      btn.innerHTML = '\u{1F512} Betaal nu <span id="idealBedrag">' + document.getElementById('samenPrijs').textContent + '</span> via iDEAL';
+      alert('Er ging iets mis: ' + err.message + '\n\nProbeer het opnieuw of neem contact op.');
+    }
+  }
+
+  function sluitOverlay() {
+    document.getElementById('overlay').classList.remove('zichtbaar');
+    // Formulier resetten
+    ['invoerVoornaam','invoerAchternaam','invoerEmail','invoerTelefoon','invoerStraat','invoerPostcode','invoerStad'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    document.getElementById('invoerLocatie').value = '';
+    aantal = 1;
+    document.getElementById('aantalVal').value = 1;
+    updateSamenvatting();
+  }
+
+  // ══════════════════════════════
+  //  ADMIN DASHBOARD LADEN
+  // ══════════════════════════════
+  function laadAdmin() {
+    const bestellingen = dbLees();
+    const tbody = document.getElementById('bestellingenTabel');
+    const geenMsg = document.getElementById('geenBestellingen');
+
+    // KPI's berekenen
+    const totaalBoxen = bestellingen.reduce((s,b) => s + b.aantal, 0);
+    const totaalOmzet = bestellingen.reduce((s,b) => s + b.bedrag, 0);
+    const aantalBezorg = bestellingen.filter(b => b.leveringType === 'bezorg').length;
+
+    document.getElementById('kpiBoxen').textContent = totaalBoxen;
+    document.getElementById('kpiOmzet').textContent = '€ ' + totaalOmzet.toLocaleString('nl-NL');
+    document.getElementById('kpiBezorg').textContent = aantalBezorg;
+    document.getElementById('kpiBestellingen').textContent = bestellingen.length;
+
+    // Actie-balk
+    const locaties = [...new Set(bestellingen.filter(b=>b.leveringType==='ophaal').map(b=>b.locatie))];
+    document.getElementById('actieInfo').textContent =
+      totaalBoxen + ' boxen · ' + locaties.length + ' locatie' + (locaties.length !== 1 ? 's' : '') + ' · ' + aantalBezorg + ' bezorgadres' + (aantalBezorg !== 1 ? 'sen' : '');
+
+    // Boxen per locatie chart
+    const locatieMap = {};
+    bestellingen.forEach(b => {
+      const key = b.leveringType === 'bezorg' ? '🚚 Thuisbezorging' : b.locatie;
+      locatieMap[key] = (locatieMap[key] || 0) + b.aantal;
+    });
+    const kleuren = ['#a07840','#3a5a40','#3a5a8a','#cc0066','#7a5a30','#2a4a30'];
+    const maxBoxen = Math.max(...Object.values(locatieMap), 1);
+    const locatieDiv = document.getElementById('locatieStats');
+    if (Object.keys(locatieMap).length === 0) {
+      locatieDiv.innerHTML = '<div style="color:var(--muted);font-size:12px;">Nog geen bestellingen.</div>';
+    } else {
+      locatieDiv.innerHTML = Object.entries(locatieMap).map(([naam, n], i) =>
+        `<div class="loc-item"><div class="loc-rij"><span>${naam}</span><strong>${n} box${n!==1?'en':''}</strong></div>
+        <div class="balk-bg"><div class="balk" style="width:${Math.round(n/maxBoxen*100)}%;background:${kleuren[i%kleuren.length]};"></div></div></div>`
+      ).join('');
+    }
+
+    // Bestellingen deze week chart
+    const dagen = ['Ma','Di','Wo','Do','Vr','Za','Zo'];
+    const weekTelling = [0,0,0,0,0,0,0];
+    const nu2 = new Date();
+    const dagVdWeek = (nu2.getDay() + 6) % 7; // 0=ma
+    bestellingen.forEach(b => {
+      const d = new Date(b.timestamp);
+      const diff = Math.floor((nu2 - d) / 86400000);
+      const dagIdx = dagVdWeek - diff;
+      if (dagIdx >= 0 && dagIdx <= 6) weekTelling[dagIdx]++;
+    });
+    const maxWeek = Math.max(...weekTelling, 1);
+    document.getElementById('weekChart').innerHTML = dagen.map((dag, i) => {
+      const h = Math.round(weekTelling[i] / maxWeek * 80);
+      const isVandaag = i === dagVdWeek;
+      return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;">
+        <div style="width:100%;background:${isVandaag?'#a07840':'#c8a96e'};border-radius:1px 1px 0 0;height:${h||2}px;opacity:${isVandaag?1:0.6};"></div>
+        <div style="font-size:10px;color:${isVandaag?'var(--tekst)':'var(--muted)'};font-weight:${isVandaag?'600':'400'};">${dag}</div>
+      </div>`;
+    }).join('');
+    document.getElementById('weekLabel').textContent = weekTelling.reduce((a,b)=>a+b,0) + ' bestellingen deze week';
+
+    // Tabel vullen
+    tbody.innerHTML = '';
+    if (bestellingen.length === 0) {
+      geenMsg.style.display = 'block';
+      return;
+    }
+    geenMsg.style.display = 'none';
+
+    bestellingen.forEach(b => {
+      const isBezorg = b.leveringType === 'bezorg';
+      const leveringBadge = isBezorg
+        ? `<span class="badge badge-bezorg">🚚 Bezorging</span>`
+        : `<span class="badge badge-loc">🏪 Ophalen</span>`;
+      const locatieKolom = isBezorg
+        ? (b.adres ? `<span style="font-size:11.5px;">${b.adres}</span>` : '—')
+        : `<strong style="font-size:12px;">${b.locatie}</strong>`;
+      const statusBadge = b.status === 'betaald'
+        ? `<span class="badge badge-betaald">✓ Betaald</span>`
+        : `<span class="badge badge-wacht">⏳ In afwachting</span>`;
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="color:var(--muted);">${b.id}</td>
+        <td><strong>${b.naam}</strong><br><span style="font-size:11px;color:var(--muted);">${b.email}${b.telefoon ? ' · ' + b.telefoon : ''}</span></td>
+        <td><strong>${b.aantal}</strong></td>
+        <td>${leveringBadge}</td>
+        <td>${locatieKolom}</td>
+        <td><strong>€ ${b.bedrag.toLocaleString('nl-NL')}</strong></td>
+        <td>${statusBadge}</td>
+        <td style="color:var(--muted);font-size:11px;">${b.datum}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // ══════════════════════════════
+  //  CSV EXPORT
+  // ══════════════════════════════
+  function exporteerCSV() {
+    const bestellingen = dbLees();
+    if (bestellingen.length === 0) { alert('Geen bestellingen om te exporteren.'); return; }
+
+    const header = ['#','Naam','Email','Telefoon','Boxen','Levering','Locatie/Adres','Bedrag','Status','Datum'];
+    const rijen = bestellingen.map(b => [
+      b.id, b.naam, b.email, b.telefoon || '',
+      b.aantal, b.leveringType === 'bezorg' ? 'Bezorging' : 'Ophalen',
+      b.leveringType === 'bezorg' ? b.adres : b.locatie,
+      '€ ' + b.bedrag, b.status, b.datum
+    ].map(v => '"' + String(v).replace(/"/g,'""') + '"').join(','));
+
+    const csv = [header.join(','), ...rijen].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'bestellingen_paasbox_2026.csv';
+    a.click(); URL.revokeObjectURL(url);
+  }  function leegmakenBevestig() {
+    if (confirm('Weet je zeker dat je alle bestellingen wilt verwijderen? Dit kan niet ongedaan worden gemaakt.')) {
+      localStorage.removeItem(DB_KEY);
+      laadAdmin();
+    }
+  }
+</script>
+</body>
+</html>
