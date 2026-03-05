@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, inhitial-scale=1.0">
 <title>Paasbrunch Box · Ateliercuisine Rosier</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -888,7 +888,7 @@
       if (!resp.ok || !data.checkoutUrl) throw new Error(data.error || 'Onbekende fout');
 
       // Redirect naar Mollie betaalpagina
-      window.location.href = data.checkoutUrl;
+      if (data.mollieId) localStorage.setItem('mollieId_' + bestellingId, data.mollieId);      window.location.href = data.checkoutUrl;
 
     } catch (err) {
       btn.disabled = false;
