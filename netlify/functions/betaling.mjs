@@ -22,38 +22,20 @@ export const handler = async (event) => {
 
   try {
     const payment = await mollie.payments.create({
-      amount: {
-        currency: 'EUR',
-        value: Number(bedrag).toFixed(2)
-      },
+      amount: { currency: 'EUR', value: Number(bedrag).toFixed(2) },
       description: `Paasbrunch Box #${bestellingId} — Ateliercuisine Rosier`,
       redirectUrl: `${process.env.SITE_URL}/betaling-verwerkt?id=${bestellingId}`,
       webhookUrl: `${process.env.SITE_URL}/.netlify/functions/webhook`,
       method: 'ideal',
-      metadata: {
-        bestellingId,
-        naam,
-        email,
-        telefoon: telefoon || '',
-        aantal,
-        leveringType,
-        locatie: locatie || '',
-        adres: adres || '',
-        bedrag
-      }
+      metadata: { bestellingId, naam, email, telefoon: telefoon || '', aantal, leveringType, locatie: locatie || '', adres: adres || '', bedrag }
     });
 
     return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ checkoutUrl: payment.getCheckoutUrl() })
+      body: JSON.stringify({ checkoutUrl: payment.getCheckoutUrl(), mollieId: payment.id, bestellingId })
     };
-
   } catch (err) {
-    console.error('Mollie fout:', err);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: 'Betaling aanmaken mislukt', details: err.message })
-    };
+    return { statusCode: 500, body: JSON.stringify({ error: 'Betaling aanmaken mislukt', details: err.message }) };
   }
 };
