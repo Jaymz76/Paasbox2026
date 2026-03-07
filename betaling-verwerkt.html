@@ -4,73 +4,81 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Betaling verwerkt · Ateliercuisine Rosier</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Cormorant Garamond', Georgia, serif; background: #f5f0e8; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-  .card { background: #fff; border-radius: 8px; padding: 48px 40px; max-width: 480px; width: 100%; text-align: center; box-shadow: 0 2px 20px rgba(0,0,0,0.06); }
-  .icon { font-size: 48px; margin-bottom: 16px; }
-  h1 { color: #2d5016; font-size: 28px; font-weight: 400; margin-bottom: 16px; }
-  p { color: #666; font-size: 16px; line-height: 1.6; margin-bottom: 12px; }
-  .nr { color: #8b6914; font-size: 14px; letter-spacing: 1px; margin: 24px 0; }
-  .btn { display: inline-block; margin-top: 24px; padding: 14px 32px; background: #2d5016; color: #fff; text-decoration: none; border-radius: 4px; font-family: inherit; font-size: 15px; }
-  .spinner { display: inline-block; width: 32px; height: 32px; border: 3px solid #e8dcc8; border-top-color: #2d5016; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px; }
-  @keyframes spin { to { transform: rotate(360deg); } }
+  :root { --goud:#a07840; --tekst:#1a1916; --muted:#7a7570; --rand:#e0dbd3; --licht:#f8f7f5; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Jost',sans-serif; background:var(--licht); color:var(--tekst); min-height:100vh; display:flex; align-items:center; justify-content:center; }
+  .box { background:white; border:1px solid var(--rand); padding:60px 48px; max-width:460px; width:90%; text-align:center; }
+  .icon { font-size:56px; margin-bottom:20px; }
+  .titel { font-family:'Cormorant Garamond',serif; font-size:34px; font-weight:300; margin-bottom:12px; }
+  .tekst { font-size:13px; color:var(--muted); line-height:1.8; margin-bottom:8px; }
+  .nr { font-size:13px; color:var(--muted); margin-bottom:28px; }
+  .nr strong { color:var(--goud); }
+  .btn { display:inline-block; background:var(--tekst); color:white; border:none; padding:13px 32px; font-size:13px; font-weight:500; cursor:pointer; font-family:'Jost',sans-serif; letter-spacing:.5px; text-decoration:none; }
+  .fout { color:#cc3333; }
 </style>
 </head>
 <body>
-<div class="card" id="inhoud">
-  <div class="icon">⏳</div>
-  <h1 id="titel">Betaling controleren...</h1>
-  <p id="tekst">Even geduld, we verifiëren je betaling.</p>
-  <p class="nr" id="nr"></p>
+<div class="box" id="inhoud">
+  <div class="icon" id="icon">⏳</div>
+  <div class="titel" id="titel">Betaling controleren...</div>
+  <div class="tekst" id="tekst">Even geduld, we verifiëren je betaling.</div>
+  <div class="nr" id="nr"></div>
 </div>
-
 <script>
-  const params = new URLSearchParams(window.location.search);
-  const id = params.get('id');
-  const mollieId = params.get('mollieId') || (id ? localStorage.getItem('mollieId_' + id) : null);
+  var params = new URLSearchParams(window.location.search);
+  var id = params.get('id');
+  var mollieId = params.get('mollieId') || (id ? localStorage.getItem('mollieId_' + id) : null);
+  var DB_KEY = 'rosier_bestellingen';
+  var bestellingen = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
 
-  async function controleer() {
-    if (!mollieId && !id) { toonFout(); return; }
-
-    try {
-      const resp = await fetch('/api/betaling-status?mollieId=' + encodeURIComponent(mollieId || id));
-      const data = await resp.json();
-
-      if (data.status === 'paid') {
-        // Update lokale bestelling naar betaald
-        const DB_KEY = 'rosier_bestellingen';
-        const bestellingen = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
-        const idx = bestellingen.findIndex(b => b.id === id);
-        if (idx !== -1) { bestellingen[idx].status = 'betaald'; localStorage.setItem(DB_KEY, JSON.stringify(bestellingen)); }
-
-        document.getElementById('icon').textContent = '🐣';
-        document.getElementById('titel').textContent = 'Bestelling bevestigd!';
-        document.getElementById('tekst').textContent = 'Bedankt voor je bestelling bij Ateliercuisine Rosier. Je ontvangt een bevestiging per e-mail.';
-        document.getElementById('nr').innerHTML = 'Bestelnummer: <strong>#' + id + '</strong>';
-        document.getElementById('inhoud').insertAdjacentHTML('beforeend', '<a class="btn" href="/">Terug naar de site</a>');
-
-      } else if (data.status === 'failed' || data.status === 'canceled' || data.status === 'expired') {
-        toonFout(data.status);
-      } else {
-        // Nog niet betaald, probeer opnieuw
-        setTimeout(controleer, 2000);
-      }
-    } catch (e) {
-      setTimeout(controleer, 3000);
+  function toonSuccess() {
+    document.getElementById('icon').textContent = '\uD83D\uDC23';
+    document.getElementById('titel').textContent = 'Bestelling bevestigd!';
+    document.getElementById('tekst').textContent = 'Bedankt voor je bestelling bij Ateliercuisine Rosier. Je ontvangt een bevestiging per e-mail.';
+    document.getElementById('nr').innerHTML = 'Bestelnummer: <strong>#' + id + '<\/strong>';
+    if (!document.querySelector('.btn')) {
+      document.getElementById('inhoud').insertAdjacentHTML('beforeend', '<a class="btn" href="\/">Terug naar de site<\/a>');
     }
   }
 
   function toonFout(status) {
-    document.getElementById('icon').textContent = '❌';
+    var berichten = { canceled: 'Je hebt de betaling geannuleerd.', expired: 'De betaaltermijn is verlopen.', failed: 'De betaling is mislukt.' };
+    document.getElementById('icon').textContent = '\u274C';
     document.getElementById('titel').textContent = 'Betaling niet geslaagd';
-    document.getElementById('tekst').textContent = status === 'canceled' ? 'Je hebt de betaling geannuleerd.' : 'Er ging iets mis met de betaling.';
-    document.getElementById('inhoud').insertAdjacentHTML('beforeend', '<a class="btn" href="/">Probeer opnieuw</a>');
+    document.getElementById('tekst').innerHTML = '<span class="fout">' + (berichten[status] || 'Er is iets misgegaan.') + '<\/span>';
+    if (!document.querySelector('.btn')) {
+      document.getElementById('inhoud').insertAdjacentHTML('beforeend', '<a class="btn" href="\/" style="margin-top:20px;display:inline-block;">Opnieuw proberen<\/a>');
+    }
   }
 
-  controleer();
-</script>
+  var bestaand = bestellingen.find(function(b) { return b.id === id; });
+  if (bestaand && bestaand.status === 'betaald') {
+    toonSuccess();
+  } else {
+    var pogingen = 0;
+    function controleer() {
+      if (!mollieId && !id) { toonFout(); return; }
+      pogingen++;
+      if (pogingen > 10) { toonFout(); return; }
+      fetch('/api/betaling-status?mollieId=' + encodeURIComponent(mollieId || id))
+        .then(function(r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+        .then(function(data) {
+          if (data.status === 'paid') {
+            var idx = bestellingen.findIndex(function(b) { return b.id === id; });
+            if (idx !== -1) { bestellingen[idx].status = 'betaald'; localStorage.setItem(DB_KEY, JSON.stringify(bestellingen)); }
+            toonSuccess();
+          } else if (data.status === 'failed' || data.status === 'canceled' || data.status === 'expired') {
+            toonFout(data.status);
+          } else {
+            setTimeout(controleer, 2000);
+          }
+        })
+        .catch(function() { if (pogingen < 3) setTimeout(controleer, 2000); else toonFout(); });
+    }
+    controleer();
+  }
+<\/script>
 </body>
-</html>
+ </html>
