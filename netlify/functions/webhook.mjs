@@ -1,4 +1,5 @@
 import { createMollieClient } from '@mollie/api-client';
+import { getStore } from '@netlify/blobs';
 
 const mollie = createMollieClient({ apiKey: process.env.MOLLIE_API_KEY });
 
@@ -22,6 +23,24 @@ export const handler = async (event) => {
     }
 
     const m = payment.metadata;
+
+    // Sla bestelling op in Netlify Blobs
+    const store = getStore('bestellingen');
+    const bestelling = {
+      id: m.bestellingId,
+      naam: m.naam,
+      email: m.email,
+      telefoon: m.telefoon || '',
+      aantal: m.aantal,
+      leveringType: m.leveringType,
+      locatie: m.locatie || '',
+      adres: m.adres || '',
+      bedrag: m.bedrag,
+      status: 'betaald',
+      mollieId: id,
+      timestamp: new Date().toISOString()
+    };
+    await store.setJSON(m.bestellingId, bestelling);
 
     // Bevestigingsmail naar klant
     await stuurMail({
@@ -62,7 +81,6 @@ async function stuurMail({ naar, onderwerp, html, tekst }) {
       text: tekst
     })
   });
-
   if (!resp.ok) {
     const txt = await resp.text();
     throw new Error('Resend fout: ' + txt);
@@ -70,142 +88,21 @@ async function stuurMail({ naar, onderwerp, html, tekst }) {
 }
 
 function bevestigingsmailHtml(m) {
-  const levering = m.leveringType === 'bezorg'
-    ? `Thuisbezorging naar: ${m.adres}`
-    : `Ophalen bij: ${m.locatie}`;
-
-  return `<!DOCTYPE html>
-<html lang="nl">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-<body style="margin:0;padding:0;background:#f5f0e8;font-family:Georgia,serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f0e8;padding:40px 20px;">
-    <tr><td align="center">
-      <table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;overflow:hidden;max-width:600px;">
-        <tr>
-          <td style="background:#2d5016;padding:32px 40px;text-align:center;">
-            <p style="margin:0;color:#c8a86b;font-size:13px;letter-spacing:3px;text-transform:uppercase;">Ateliercuisine Rosier</p>
-            <h1 style="margin:8px 0 0;color:#ffffff;font-size:26px;font-weight:normal;">🐣 Paasbrunch Box 2026</h1>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:40px;">
-            <p style="color:#4a3728;font-size:16px;margin:0 0 24px;">Beste ${m.naam},</p>
-            <p style="color:#4a3728;font-size:16px;margin:0 0 32px;">Bedankt voor je bestelling! We kijken ernaar uit om jou een heerlijke Paasbrunch te bezorgen.</p>
-            <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9f6f0;border-radius:6px;padding:24px;margin-bottom:32px;">
-              <tr><td style="padding-bottom:16px;">
-                <p style="margin:0;color:#8b6914;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:Arial,sans-serif;">Jouw bestelling</p>
-              </td></tr>
-              <tr><td style="padding:8px 0;border-bottom:1px solid #e8dcc8;">
-                <table width="100%"><tr>
-                  <td style="color:#666;font-size:14px;font-family:Arial,sans-serif;">Bestelnummer</td>
-                  <td align="right" style="color:#2d5016;font-size:14px;font-weight:bold;font-family:Arial,sans-serif;">#${m.bestellingId}</td>
-                </tr></table>
-              </td></tr>
-              <tr><td style="padding:8px 0;border-bottom:1px solid #e8dcc8;">
-                <table width="100%"><tr>
-                  <td style="color:#666;font-size:14px;font-family:Arial,sans-serif;">Aantal boxen</td>
-                  <td align="right" style="color:#333;font-size:14px;font-family:Arial,sans-serif;">${m.aantal} × Paasbrunch Box (voor 2 personen)</td>
-                </tr></table>
-              </td></tr>
-              <tr><td style="padding:8px 0;border-bottom:1px solid #e8dcc8;">
-                <table width="100%"><tr>
-                  <td style="color:#666;font-size:14px;font-family:Arial,sans-serif;">Levering</td>
-                  <td align="right" style="color:#333;font-size:14px;font-family:Arial,sans-serif;">${levering}</td>
-                </tr></table>
-              </td></tr>
-              <tr><td style="padding:8px 0;border-bottom:1px solid #e8dcc8;">
-                <table width="100%"><tr>
-                  <td style="color:#666;font-size:14px;font-family:Arial,sans-serif;">Datum</td>
-                  <td align="right" style="color:#333;font-size:14px;font-family:Arial,sans-serif;">Paaszaterdag 4 april 2026</td>
-                </tr></table>
-              </td></tr>
-              <tr><td style="padding:12px 0 0;">
-                <table width="100%"><tr>
-                  <td style="color:#2d5016;font-size:15px;font-weight:bold;font-family:Arial,sans-serif;">Totaal</td>
-                  <td align="right" style="color:#2d5016;font-size:18px;font-weight:bold;font-family:Arial,sans-serif;">€ ${Number(m.bedrag).toLocaleString('nl-NL')} ✓</td>
-                </tr></table>
-              </td></tr>
-            </table>
-            <p style="color:#4a3728;font-size:15px;margin:0 0 8px;">Heb je vragen? Neem gerust contact op:</p>
-            <p style="margin:0;"><a href="mailto:paasbox2026@nielsrosier.nl" style="color:#2d5016;font-size:15px;">paasbox2026@nielsrosier.nl</a></p>
-          </td>
-        </tr>
-        <tr>
-          <td style="background:#f9f6f0;padding:24px 40px;text-align:center;border-top:1px solid #e8dcc8;">
-            <p style="margin:0;color:#999;font-size:12px;font-family:Arial,sans-serif;">Niels Rosier · Ateliercuisine Rosier · <a href="https://www.nielsrosier.nl" style="color:#999;">nielsrosier.nl</a></p>
-          </td>
-        </tr>
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>`;
+  const levering = m.leveringType === 'bezorg' ? `Thuisbezorging naar: ${m.adres}` : `Ophalen bij: ${m.locatie}`;
+  return `<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#f5f0e8;font-family:Georgia,serif;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f0e8;padding:40px 20px;"><tr><td align="center"><table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;overflow:hidden;max-width:600px;"><tr><td style="background:#2d5016;padding:32px 40px;text-align:center;"><p style="margin:0;color:#c8a86b;font-size:13px;letter-spacing:3px;text-transform:uppercase;">Ateliercuisine Rosier</p><h1 style="margin:8px 0 0;color:#fff;font-size:26px;font-weight:normal;">🐣 Paasbrunch Box 2026</h1></td></tr><tr><td style="padding:40px;"><p style="color:#4a3728;font-size:16px;margin:0 0 24px;">Beste ${m.naam},</p><p style="color:#4a3728;font-size:16px;margin:0 0 32px;">Bedankt voor je bestelling! We kijken ernaar uit om jou een heerlijke Paasbrunch te bezorgen.</p><table width="100%" cellpadding="0" cellspacing="0" style="background:#f9f6f0;border-radius:6px;padding:24px;margin-bottom:32px;"><tr><td style="padding-bottom:16px;"><p style="margin:0;color:#8b6914;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:Arial,sans-serif;">Jouw bestelling</p></td></tr><tr><td style="padding:8px 0;border-bottom:1px solid #e8dcc8;"><table width="100%"><tr><td style="color:#666;font-size:14px;font-family:Arial,sans-serif;">Bestelnummer</td><td align="right" style="color:#2d5016;font-size:14px;font-weight:bold;font-family:Arial,sans-serif;">#${m.bestellingId}</td></tr></table></td></tr><tr><td style="padding:8px 0;border-bottom:1px solid #e8dcc8;"><table width="100%"><tr><td style="color:#666;font-size:14px;font-family:Arial,sans-serif;">Aantal boxen</td><td align="right" style="color:#333;font-size:14px;font-family:Arial,sans-serif;">${m.aantal} × Paasbrunch Box (voor 2 personen)</td></tr></table></td></tr><tr><td style="padding:8px 0;border-bottom:1px solid #e8dcc8;"><table width="100%"><tr><td style="color:#666;font-size:14px;font-family:Arial,sans-serif;">Levering</td><td align="right" style="color:#333;font-size:14px;font-family:Arial,sans-serif;">${levering}</td></tr></table></td></tr><tr><td style="padding:8px 0;border-bottom:1px solid #e8dcc8;"><table width="100%"><tr><td style="color:#666;font-size:14px;font-family:Arial,sans-serif;">Datum</td><td align="right" style="color:#333;font-size:14px;font-family:Arial,sans-serif;">Paaszaterdag 4 april 2026</td></tr></table></td></tr><tr><td style="padding:12px 0 0;"><table width="100%"><tr><td style="color:#2d5016;font-size:15px;font-weight:bold;font-family:Arial,sans-serif;">Totaal</td><td align="right" style="color:#2d5016;font-size:18px;font-weight:bold;font-family:Arial,sans-serif;">€ ${Number(m.bedrag).toLocaleString('nl-NL')} ✓</td></tr></table></td></tr></table><p style="color:#4a3728;font-size:15px;margin:0 0 8px;">Heb je vragen? Neem gerust contact op:</p><p style="margin:0;"><a href="mailto:paasbox2026@nielsrosier.nl" style="color:#2d5016;font-size:15px;">paasbox2026@nielsrosier.nl</a></p></td></tr><tr><td style="background:#f9f6f0;padding:24px 40px;text-align:center;border-top:1px solid #e8dcc8;"><p style="margin:0;color:#999;font-size:12px;font-family:Arial,sans-serif;">Niels Rosier · Ateliercuisine Rosier · <a href="https://www.nielsrosier.nl" style="color:#999;">nielsrosier.nl</a></p></td></tr></table></td></tr></table></body></html>`;
 }
 
 function bevestigingsmailTekst(m) {
-  const levering = m.leveringType === 'bezorg'
-    ? `Thuisbezorging naar: ${m.adres}`
-    : `Ophalen bij: ${m.locatie}`;
-
-  return `Beste ${m.naam},
-
-Bedankt voor je bestelling bij Ateliercuisine Rosier!
-
-JOUW BESTELLING
-───────────────────────────
-Bestelnummer:  #${m.bestellingId}
-Aantal boxen:  ${m.aantal} × Paasbrunch Box (voor 2 personen)
-${levering}
-Datum:         Paaszaterdag 4 april 2026
-Totaalbedrag:  € ${Number(m.bedrag).toLocaleString('nl-NL')}
-Betaalstatus:  ✓ Betaald
-───────────────────────────
-
-Heb je vragen? Stuur een mail naar paasbox2026@nielsrosier.nl
-
-Met vriendelijke groet,
-Niels Rosier
-Ateliercuisine Rosier
-www.nielsrosier.nl`;
+  const levering = m.leveringType === 'bezorg' ? `Thuisbezorging naar: ${m.adres}` : `Ophalen bij: ${m.locatie}`;
+  return `Beste ${m.naam},\n\nBedankt voor je bestelling bij Ateliercuisine Rosier!\n\nJOUW BESTELLING\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nBestelnummer:  #${m.bestellingId}\nAantal boxen:  ${m.aantal} x Paasbrunch Box (voor 2 personen)\n${levering}\nDatum:         Paaszaterdag 4 april 2026\nTotaalbedrag:  \u20AC ${Number(m.bedrag).toLocaleString('nl-NL')}\nBetaalstatus:  Betaald\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\nHeb je vragen? Stuur een mail naar paasbox2026@nielsrosier.nl\n\nMet vriendelijke groet,\nNiels Rosier\nAteliercuisine Rosier\nwww.nielsrosier.nl`;
 }
 
 function adminMailHtml(m) {
-  const levering = m.leveringType === 'bezorg'
-    ? `🚚 Bezorging → ${m.adres}`
-    : `🏪 Ophalen → ${m.locatie}`;
-
-  return `<!DOCTYPE html>
-<html lang="nl">
-<body style="font-family:Arial,sans-serif;background:#f5f5f5;padding:20px;">
-  <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;padding:32px;max-width:560px;">
-    <tr><td>
-      <h2 style="color:#2d5016;margin:0 0 20px;">🥚 Nieuwe betaalde bestelling</h2>
-      <table width="100%" cellpadding="6" cellspacing="0">
-        <tr style="background:#f9f6f0;"><td style="color:#666;font-size:13px;">Bestelnummer</td><td style="font-weight:bold;">#${m.bestellingId}</td></tr>
-        <tr><td style="color:#666;font-size:13px;">Naam</td><td>${m.naam}</td></tr>
-        <tr style="background:#f9f6f0;"><td style="color:#666;font-size:13px;">Email</td><td><a href="mailto:${m.email}">${m.email}</a></td></tr>
-        <tr><td style="color:#666;font-size:13px;">Telefoon</td><td>${m.telefoon || '—'}</td></tr>
-        <tr style="background:#f9f6f0;"><td style="color:#666;font-size:13px;">Aantal boxen</td><td>${m.aantal}</td></tr>
-        <tr><td style="color:#666;font-size:13px;">Levering</td><td>${levering}</td></tr>
-        <tr style="background:#f9f6f0;"><td style="color:#666;font-size:13px;">Bedrag</td><td style="font-weight:bold;color:#2d5016;">€ ${Number(m.bedrag).toLocaleString('nl-NL')}</td></tr>
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>`;
+  const levering = m.leveringType === 'bezorg' ? `🚚 Bezorging → ${m.adres}` : `🏪 Ophalen → ${m.locatie}`;
+  return `<!DOCTYPE html><html lang="nl"><body style="font-family:Arial,sans-serif;background:#f5f5f5;padding:20px;"><table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;padding:32px;max-width:560px;"><tr><td><h2 style="color:#2d5016;margin:0 0 20px;">🥚 Nieuwe betaalde bestelling</h2><table width="100%" cellpadding="6" cellspacing="0"><tr style="background:#f9f6f0;"><td style="color:#666;font-size:13px;">Bestelnummer</td><td style="font-weight:bold;">#${m.bestellingId}</td></tr><tr><td style="color:#666;font-size:13px;">Naam</td><td>${m.naam}</td></tr><tr style="background:#f9f6f0;"><td style="color:#666;font-size:13px;">Email</td><td><a href="mailto:${m.email}">${m.email}</a></td></tr><tr><td style="color:#666;font-size:13px;">Telefoon</td><td>${m.telefoon || '—'}</td></tr><tr style="background:#f9f6f0;"><td style="color:#666;font-size:13px;">Aantal boxen</td><td>${m.aantal}</td></tr><tr><td style="color:#666;font-size:13px;">Levering</td><td>${levering}</td></tr><tr style="background:#f9f6f0;"><td style="color:#666;font-size:13px;">Bedrag</td><td style="font-weight:bold;color:#2d5016;">€ ${Number(m.bedrag).toLocaleString('nl-NL')}</td></tr></table></td></tr></table></body></html>`;
 }
 
 function adminMailTekst(m) {
-  const levering = m.leveringType === 'bezorg'
-    ? `🚚 Bezorging → ${m.adres}`
-    : `🏪 Ophalen → ${m.locatie}`;
-
-  return `Nieuwe betaalde bestelling ontvangen!
-
-#${m.bestellingId} — ${m.naam}
-Email:    ${m.email}
-Telefoon: ${m.telefoon || '—'}
-Boxen:    ${m.aantal}
-${levering}
-Bedrag:   € ${Number(m.bedrag).toLocaleString('nl-NL')}`;
+  const levering = m.leveringType === 'bezorg' ? `Bezorging -> ${m.adres}` : `Ophalen -> ${m.locatie}`;
+  return `Nieuwe betaalde bestelling!\n\n#${m.bestellingId} - ${m.naam}\nEmail: ${m.email}\nTelefoon: ${m.telefoon || '-'}\nBoxen: ${m.aantal}\n${levering}\nBedrag: \u20AC ${Number(m.bedrag).toLocaleString('nl-NL')}`;
 }
