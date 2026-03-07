@@ -8,14 +8,14 @@
 <style>
   :root { --goud:#a07840; --tekst:#1a1916; --muted:#7a7570; --rand:#e0dbd3; --licht:#f8f7f5; }
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family:'Jost',sans-serif; background:var(--licht); color:var(--tekst); min-height:100vh; display:flex; align-items:center; justify-content:center; }
+  body { font-family:"Jost",sans-serif; background:var(--licht); color:var(--tekst); min-height:100vh; display:flex; align-items:center; justify-content:center; }
   .box { background:white; border:1px solid var(--rand); padding:60px 48px; max-width:460px; width:90%; text-align:center; }
   .icon { font-size:56px; margin-bottom:20px; }
-  .titel { font-family:'Cormorant Garamond',serif; font-size:34px; font-weight:300; margin-bottom:12px; }
+  .titel { font-family:"Cormorant Garamond",serif; font-size:34px; font-weight:300; margin-bottom:12px; }
   .tekst { font-size:13px; color:var(--muted); line-height:1.8; margin-bottom:8px; }
   .nr { font-size:13px; color:var(--muted); margin-bottom:28px; }
   .nr strong { color:var(--goud); }
-  .btn { display:inline-block; background:var(--tekst); color:white; border:none; padding:13px 32px; font-size:13px; font-weight:500; cursor:pointer; font-family:'Jost',sans-serif; letter-spacing:.5px; text-decoration:none; }
+  .btn { display:inline-block; background:var(--tekst); color:white; border:none; padding:13px 32px; font-size:13px; font-weight:500; cursor:pointer; font-family:"Jost",sans-serif; letter-spacing:.5px; text-decoration:none; }
   .fout { color:#cc3333; }
 </style>
 </head>
@@ -27,34 +27,35 @@
   <div class="nr" id="nr"></div>
 </div>
 <script>
+(function() {
   var params = new URLSearchParams(window.location.search);
-  var id = params.get('id');
-  var mollieId = params.get('mollieId') || (id ? localStorage.getItem('mollieId_' + id) : null);
-  var DB_KEY = 'rosier_bestellingen';
-  var bestellingen = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+  var id = params.get("id");
+  var mollieId = params.get("mollieId") || (id ? localStorage.getItem("mollieId_" + id) : null);
+  var DB_KEY = "rosier_bestellingen";
+  var bestellingen = JSON.parse(localStorage.getItem(DB_KEY) || "[]");
 
   function toonSuccess() {
-    document.getElementById('icon').textContent = '\uD83D\uDC23';
-    document.getElementById('titel').textContent = 'Bestelling bevestigd!';
-    document.getElementById('tekst').textContent = 'Bedankt voor je bestelling bij Ateliercuisine Rosier. Je ontvangt een bevestiging per e-mail.';
-    document.getElementById('nr').innerHTML = 'Bestelnummer: <strong>#' + id + '<\/strong>';
-    if (!document.querySelector('.btn')) {
-      document.getElementById('inhoud').insertAdjacentHTML('beforeend', '<a class="btn" href="\/">Terug naar de site<\/a>');
+    document.getElementById("icon").textContent = "🐣";
+    document.getElementById("titel").textContent = "Bestelling bevestigd!";
+    document.getElementById("tekst").textContent = "Bedankt voor je bestelling bij Ateliercuisine Rosier. Je ontvangt een bevestiging per e-mail.";
+    document.getElementById("nr").innerHTML = "Bestelnummer: <strong>#" + id + "</strong>";
+    if (!document.querySelector(".btn")) {
+      document.getElementById("inhoud").insertAdjacentHTML("beforeend", "<a class=\"btn\" href=\"/\">Terug naar de site</a>");
     }
   }
 
   function toonFout(status) {
-    var berichten = { canceled: 'Je hebt de betaling geannuleerd.', expired: 'De betaaltermijn is verlopen.', failed: 'De betaling is mislukt.' };
-    document.getElementById('icon').textContent = '\u274C';
-    document.getElementById('titel').textContent = 'Betaling niet geslaagd';
-    document.getElementById('tekst').innerHTML = '<span class="fout">' + (berichten[status] || 'Er is iets misgegaan.') + '<\/span>';
-    if (!document.querySelector('.btn')) {
-      document.getElementById('inhoud').insertAdjacentHTML('beforeend', '<a class="btn" href="\/" style="margin-top:20px;display:inline-block;">Opnieuw proberen<\/a>');
+    var b = { canceled: "Je hebt de betaling geannuleerd.", expired: "De betaaltermijn is verlopen.", failed: "De betaling is mislukt." };
+    document.getElementById("icon").textContent = "❌";
+    document.getElementById("titel").textContent = "Betaling niet geslaagd";
+    document.getElementById("tekst").innerHTML = "<span class=\"fout\">" + (b[status] || "Er is iets misgegaan.") + "</span>";
+    if (!document.querySelector(".btn")) {
+      document.getElementById("inhoud").insertAdjacentHTML("beforeend", "<a class=\"btn\" href=\"/\" style=\"margin-top:20px;display:inline-block;\">Opnieuw proberen</a>");
     }
   }
 
   var bestaand = bestellingen.find(function(b) { return b.id === id; });
-  if (bestaand && bestaand.status === 'betaald') {
+  if (bestaand && bestaand.status === "betaald") {
     toonSuccess();
   } else {
     var pogingen = 0;
@@ -62,14 +63,14 @@
       if (!mollieId && !id) { toonFout(); return; }
       pogingen++;
       if (pogingen > 10) { toonFout(); return; }
-      fetch('/api/betaling-status?mollieId=' + encodeURIComponent(mollieId || id))
+      fetch("/api/betaling-status?mollieId=" + encodeURIComponent(mollieId || id))
         .then(function(r) { if (!r.ok) throw new Error(r.status); return r.json(); })
         .then(function(data) {
-          if (data.status === 'paid') {
+          if (data.status === "paid") {
             var idx = bestellingen.findIndex(function(b) { return b.id === id; });
-            if (idx !== -1) { bestellingen[idx].status = 'betaald'; localStorage.setItem(DB_KEY, JSON.stringify(bestellingen)); }
+            if (idx !== -1) { bestellingen[idx].status = "betaald"; localStorage.setItem(DB_KEY, JSON.stringify(bestellingen)); }
             toonSuccess();
-          } else if (data.status === 'failed' || data.status === 'canceled' || data.status === 'expired') {
+          } else if (data.status === "failed" || data.status === "canceled" || data.status === "expired") {
             toonFout(data.status);
           } else {
             setTimeout(controleer, 2000);
@@ -79,6 +80,7 @@
     }
     controleer();
   }
-<\/script>
+})();
+</script>
 </body>
- </html>
+</html>
