@@ -21,3 +21,8 @@
   from = "/betaling-verwerkt"
   to = "/betaling-verwerkt.html"
   status = 200
+
+[[redirects]]
+  from = "/api/bestellingen"
+  to = "/.netlify/functions/bestellingen"
+  status = 200
