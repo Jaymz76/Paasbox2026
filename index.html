@@ -714,6 +714,8 @@
   const PRIJS = 90, BEZORG = 10;
   let slideIndex = 0;
 
+  let adminIngelogd = false;
+
   // ══════════════════════════════
   //  DATABASE (localStorage)
   // ══════════════════════════════
@@ -735,9 +737,15 @@
     return bestelling.id;
   }
 
-  function genereerId() {
-    const bestellingen = dbLees();
-    return String(bestellingen.length + 1).padStart(3, '0');
+  async function genereerId() {
+    try {
+      const r = await fetch('/api/bestellingen?key=rosier2026admin');
+      const lijst = await r.json();
+      const max = lijst.reduce((m, b) => Math.max(m, parseInt(b.id) || 0), 0);
+      return String(max + 1).padStart(3, '0');
+    } catch(e) {
+      return String(Date.now()).slice(-3);
+    }
   }
 
   // ══════════════════════════════
@@ -819,7 +827,7 @@
   // ══════════════════════════════
   //  BESTELLING OPSLAAN
   // ══════════════════════════════
-  async function bestellingPlaatsen() {
+  async async function bestellingPlaatsen() {
     const voornaam = document.getElementById('invoerVoornaam').value.trim();
     const achternaam = document.getElementById('invoerAchternaam').value.trim();
     const email = document.getElementById('invoerEmail').value.trim();
@@ -844,7 +852,7 @@
     const totaal = aantal * PRIJS + extra;
     const nu = new Date();
     const datumStr = nu.getDate() + ' ' + ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'][nu.getMonth()];
-    const bestellingId = genereerId();
+    const bestellingId = await genereerId();
 
     // Bestelling alvast lokaal opslaan met status 'in afwachting'
     const bestelling = {
@@ -913,8 +921,6 @@
   // ══════════════════════════════
   //  ADMIN DASHBOARD LADEN
   // ══════════════════════════════
-  let adminIngelogd = false;
-
   function laadAdmin() {
     if (!adminIngelogd) {
       const pw = prompt('Admin wachtwoord:');
