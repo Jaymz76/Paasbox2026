@@ -723,8 +723,6 @@
   const PRIJS = 90, BEZORG = 10;
   let slideIndex = 0;
 
-  let adminIngelogd = false;
-
   // ══════════════════════════════
   //  DATABASE (localStorage)
   // ══════════════════════════════
@@ -780,7 +778,6 @@
     document.getElementById('pagina-' + id).classList.add('actief');
     el.classList.add('active');
     window.scrollTo(0, 0);
-    if (id === 'admin') laadAdmin();
   }
 
   if (window.location.search.includes('admin') || window.location.hash.includes('admin')) {
@@ -796,7 +793,6 @@
     document.getElementById('pagina-' + id).classList.add('actief');
     document.querySelectorAll('.nav-tab')[map[id]].classList.add('active');
     window.scrollTo(0, 0);
-    if (id === 'admin') laadAdmin();
   }
 
   // ══════════════════════════════
@@ -930,12 +926,19 @@
   // ══════════════════════════════
   //  ADMIN DASHBOARD LADEN
   // ══════════════════════════════
-  function laadAdmin() {
-    if (!adminIngelogd) {
-      const pw = prompt('Admin wachtwoord:');
-      if (pw !== 'rosier2026admin') { alert('Onjuist wachtwoord.'); toonPaginaBtn('bestel'); return; }
-      adminIngelogd = true;
+  function checkAdminPw() {
+    const pw = document.getElementById('admin-pw-input').value;
+    if (pw === 'rosier2026admin') {
+      document.getElementById('admin-login').style.display = 'none';
+      document.getElementById('admin-dashboard').style.display = 'block';
+      laadAdmin();
+    } else {
+      document.getElementById('admin-pw-fout').style.display = 'block';
+      document.getElementById('admin-pw-input').value = '';
     }
+  }
+
+    function laadAdmin() {
     const tbody = document.getElementById('bestellingenTabel');
     const geenMsg = document.getElementById('geenBestellingen');
     tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted);">Laden...</td></tr>';
