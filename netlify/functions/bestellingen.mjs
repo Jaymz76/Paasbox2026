@@ -7,27 +7,33 @@ export const handler = async (event) => {
 
   const adminKey = event.queryStringParameters?.key;
   if (adminKey !== process.env.ADMIN_KEY) {
-    return { statusCode: 401, body: JSON.stringify({ error: 'Niet geautoriseerd' }) };
+    return { statusCode: 401, body: 'Unauthorized' };
   }
 
   try {
-    const store = getStore('bestellingen');
-    const { blobs } = await store.list();
+    const store = getStore({
+      name: 'bestellingen',
+      siteID: process.env.NETLIFY_SITE_ID || '073b8f4e-de2d-4490-aa5e-6a96ddef7e5a',
+      token: process.env.NETLIFY_API_TOKEN
+    });
 
+    const { blobs } = await store.list();
     const bestellingen = await Promise.all(
-      blobs.map(blob => store.get(blob.key, { type: 'json' }))
+      blobs.map(async (blob) => {
+        const data = await store.getJSON(blob.key);
+        return data;
+      })
     );
 
-    bestellingen.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    // Sorteer op bestelnummer
+    bestellingen.sort((a, b) => String(a.id).localeCompare(String(b.id)));
 
     return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(bestellingen)
     };
-
   } catch (err) {
-    console.error('Bestellingen fout:', err);
     return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
   }
 };
