@@ -102,12 +102,11 @@ function bevestigingsmailHtml(m) {
     <tr><td align="center">
       <table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;overflow:hidden;max-width:600px;">
         <tr>
-          <td style="padding:0;background-image:url('https://paasbox2026.netlify.app/AI_tafel_3.jpeg');background-size:cover;background-position:center top;">
-            <table width="100%" cellpadding="0" cellspacing="0"><tr>
-              <td align="center" valign="middle" style="padding:48px 40px;background:rgba(0,0,0,0.38);">
-                <img src="https://paasbox2026.netlify.app/logo.webp" alt="Ateliercuisine Rosier" width="160" style="display:block;margin:0 auto;height:auto;" />
-              </td>
-            </tr></table>
+          <td style="padding:0;text-align:center;background:#1a2e1a;">
+            <img src="https://paasbox2026.netlify.app/AI_tafel_3.jpeg" width="600" style="display:block;width:100%;max-width:600px;height:220px;object-fit:cover;" alt="" />
+            <div style="margin-top:-80px;padding-bottom:24px;position:relative;">
+              <img src="https://paasbox2026.netlify.app/logo.webp" width="140" style="display:inline-block;height:auto;" alt="Ateliercuisine Rosier" />
+            </div>
           </td>
         </tr>
         <tr><td style="padding:40px;">
