@@ -921,97 +921,36 @@
   //  ADMIN DASHBOARD LADEN
   // ══════════════════════════════
   function laadAdmin() {
-    const bestellingen = dbLees();
     const tbody = document.getElementById('bestellingenTabel');
     const geenMsg = document.getElementById('geenBestellingen');
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted);">Laden…</td></tr>';
 
-    // KPI's berekenen
-    const totaalBoxen = bestellingen.reduce((s,b) => s + b.aantal, 0);
-    const totaalOmzet = bestellingen.reduce((s,b) => s + b.bedrag, 0);
-    const aantalBezorg = bestellingen.filter(b => b.leveringType === 'bezorg').length;
+    fetch('/api/bestellingen?key=rosier2026admin')
+      .then(r => r.json())
+      .then(bestellingen => {
+        // KPI's
+        const totaalBoxen = bestellingen.reduce((s,b) => s + Number(b.aantal), 0);
+        const totaalOmzet = bestellingen.reduce((s,b) => s + Number(b.bedrag), 0);
+        const aantalBezorg = bestellingen.filter(b => b.leveringType === 'bezorg').length;
+        document.getElementById('kpiBoxen').textContent = totaalBoxen;
+        document.getElementById('kpiOmzet').textContent = '€ ' + totaalOmzet.toLocaleString('nl-NL');
+        document.getElementById('kpiBezorg').textContent = aantalBezorg;
+        document.getElementById('kpiBestellingen').textContent = bestellingen.length;
 
-    document.getElementById('kpiBoxen').textContent = totaalBoxen;
-    document.getElementById('kpiOmzet').textContent = '€ ' + totaalOmzet.toLocaleString('nl-NL');
-    document.getElementById('kpiBezorg').textContent = aantalBezorg;
-    document.getElementById('kpiBestellingen').textContent = bestellingen.length;
-
-    // Actie-balk
-    const locaties = [...new Set(bestellingen.filter(b=>b.leveringType==='ophaal').map(b=>b.locatie))];
-    document.getElementById('actieInfo').textContent =
-      totaalBoxen + ' boxen · ' + locaties.length + ' locatie' + (locaties.length !== 1 ? 's' : '') + ' · ' + aantalBezorg + ' bezorgadres' + (aantalBezorg !== 1 ? 'sen' : '');
-
-    // Boxen per locatie chart
-    const locatieMap = {};
-    bestellingen.forEach(b => {
-      const key = b.leveringType === 'bezorg' ? '🚚 Thuisbezorging' : b.locatie;
-      locatieMap[key] = (locatieMap[key] || 0) + b.aantal;
-    });
-    const kleuren = ['#a07840','#3a5a40','#3a5a8a','#cc0066','#7a5a30','#2a4a30'];
-    const maxBoxen = Math.max(...Object.values(locatieMap), 1);
-    const locatieDiv = document.getElementById('locatieStats');
-    if (Object.keys(locatieMap).length === 0) {
-      locatieDiv.innerHTML = '<div style="color:var(--muted);font-size:12px;">Nog geen bestellingen.</div>';
-    } else {
-      locatieDiv.innerHTML = Object.entries(locatieMap).map(([naam, n], i) =>
-        `<div class="loc-item"><div class="loc-rij"><span>${naam}</span><strong>${n} box${n!==1?'en':''}</strong></div>
-        <div class="balk-bg"><div class="balk" style="width:${Math.round(n/maxBoxen*100)}%;background:${kleuren[i%kleuren.length]};"></div></div></div>`
-      ).join('');
-    }
-
-    // Bestellingen deze week chart
-    const dagen = ['Ma','Di','Wo','Do','Vr','Za','Zo'];
-    const weekTelling = [0,0,0,0,0,0,0];
-    const nu2 = new Date();
-    const dagVdWeek = (nu2.getDay() + 6) % 7; // 0=ma
-    bestellingen.forEach(b => {
-      const d = new Date(b.timestamp);
-      const diff = Math.floor((nu2 - d) / 86400000);
-      const dagIdx = dagVdWeek - diff;
-      if (dagIdx >= 0 && dagIdx <= 6) weekTelling[dagIdx]++;
-    });
-    const maxWeek = Math.max(...weekTelling, 1);
-    document.getElementById('weekChart').innerHTML = dagen.map((dag, i) => {
-      const h = Math.round(weekTelling[i] / maxWeek * 80);
-      const isVandaag = i === dagVdWeek;
-      return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;">
-        <div style="width:100%;background:${isVandaag?'#a07840':'#c8a96e'};border-radius:1px 1px 0 0;height:${h||2}px;opacity:${isVandaag?1:0.6};"></div>
-        <div style="font-size:10px;color:${isVandaag?'var(--tekst)':'var(--muted)'};font-weight:${isVandaag?'600':'400'};">${dag}</div>
-      </div>`;
-    }).join('');
-    document.getElementById('weekLabel').textContent = weekTelling.reduce((a,b)=>a+b,0) + ' bestellingen deze week';
-
-    // Tabel vullen
-    tbody.innerHTML = '';
-    if (bestellingen.length === 0) {
-      geenMsg.style.display = 'block';
-      return;
-    }
-    geenMsg.style.display = 'none';
-
-    bestellingen.forEach(b => {
-      const isBezorg = b.leveringType === 'bezorg';
-      const leveringBadge = isBezorg
-        ? `<span class="badge badge-bezorg">🚚 Bezorging</span>`
-        : `<span class="badge badge-loc">🏪 Ophalen</span>`;
-      const locatieKolom = isBezorg
-        ? (b.adres ? `<span style="font-size:11.5px;">${b.adres}</span>` : '—')
-        : `<strong style="font-size:12px;">${b.locatie}</strong>`;
-      const statusBadge = b.status === 'betaald'
-        ? `<span class="badge badge-betaald">✓ Betaald</span>`
-        : `<span class="badge badge-wacht">⏳ In afwachting</span>`;
-
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td style="color:var(--muted);">${b.id}</td>
-        <td><strong>${b.naam}</strong><br><span style="font-size:11px;color:var(--muted);">${b.email}${b.telefoon ? ' · ' + b.telefoon : ''}</span></td>
-        <td><strong>${b.aantal}</strong></td>
-        <td>${leveringBadge}</td>
-        <td>${locatieKolom}</td>
-        <td><strong>€ ${b.bedrag.toLocaleString('nl-NL')}</strong></td>
-        <td>${statusBadge}</td>
-        <td style="color:var(--muted);font-size:11px;">${b.datum}</td>`;
-      tbody.appendChild(tr);
-    });
+        // Tabel
+        tbody.innerHTML = '';
+        if (bestellingen.length === 0) { geenMsg.style.display = 'block'; return; }
+        geenMsg.style.display = 'none';
+        bestellingen.forEach(b => {
+          const isBezorg = b.leveringType === 'bezorg';
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>#${b.id}</td><td>${b.naam}</td><td>${b.email}</td><td>${b.aantal}</td><td>${isBezorg ? '🚚 ' + (b.adres||'') : '🏪 ' + (b.locatie||'')}</td><td>€ ${Number(b.bedrag).toLocaleString('nl-NL')}</td><td>✓ Betaald</td>`;
+          tbody.appendChild(tr);
+        });
+      })
+      .catch(err => {
+        tbody.innerHTML = `<tr><td colspan="7" style="color:red;padding:16px;">Fout: ${err.message}</td></tr>`;
+      });
   }
 
   // ══════════════════════════════
