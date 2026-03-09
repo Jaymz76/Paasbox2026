@@ -646,6 +646,15 @@
 
 <!-- ════════════ ADMIN ════════════ -->
 <div class="pagina" id="pagina-admin">
+  <div id="admin-login" style="max-width:360px;margin:80px auto;padding:40px;background:white;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.1);text-align:center;">
+    <img src="logo.webp" style="height:48px;margin-bottom:24px;">
+    <h2 style="font-family:Georgia,serif;color:#1a2e1a;margin:0 0 8px;">Admin</h2>
+    <p style="color:#7a7570;font-size:14px;margin:0 0 24px;">Voer het wachtwoord in</p>
+    <input type="password" id="admin-pw-input" placeholder="Wachtwoord" onkeydown="if(event.key==='Enter')checkAdminPw()" style="width:100%;padding:12px 16px;border:1px solid #ddd;border-radius:6px;font-size:15px;box-sizing:border-box;margin-bottom:12px;">
+    <div id="admin-pw-fout" style="color:#cc0000;font-size:13px;margin-bottom:8px;display:none;">Onjuist wachtwoord</div>
+    <button onclick="checkAdminPw()" style="width:100%;padding:13px;background:#2d5016;color:white;border:none;border-radius:6px;font-size:15px;cursor:pointer;">Inloggen</button>
+  </div>
+  <div id="admin-dashboard" style="display:none;">
   <div class="admin-header">
     <img class="admin-logo" src="logo.webp" alt="Rosier">
     <div class="admin-label">Admin · Paasbox 2026</div>
@@ -707,7 +716,7 @@
     <div class="bevestig-tekst">Bedankt voor je bestelling bij Ateliercuisine Rosier.<br>Je ontvangt een bevestiging per e-mail met alle details.</div>
     <button class="sluit-btn" onclick="sluitOverlay()">Sluiten</button>
   </div>
-</div>
+  </div><!-- /admin-dashboard -->
 
 <script>
   let aantal = 1, leveringType = 'ophaal';
