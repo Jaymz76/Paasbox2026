@@ -42,7 +42,6 @@ export const handler = async (event) => {
     };
     await store.setJSON(m.bestellingId, bestelling);
 
-    // Bevestigingsmail naar klant
     await stuurMail({
       naar: m.email,
       onderwerp: `Bevestiging Paasbrunch Box #${m.bestellingId} — Ateliercuisine Rosier`,
@@ -50,7 +49,6 @@ export const handler = async (event) => {
       tekst: bevestigingsmailTekst(m)
     });
 
-    // Notificatie naar admin
     await stuurMail({
       naar: process.env.ADMIN_EMAIL,
       onderwerp: `🥚 Nieuwe bestelling #${m.bestellingId} — ${m.naam}`,
@@ -88,16 +86,26 @@ async function stuurMail({ naar, onderwerp, html, tekst }) {
 }
 
 function bevestigingsmailHtml(m) {
-  const levering = m.leveringType === 'bezorg' ? `Thuisbezorging naar: ${m.adres}` : `Ophalen bij: ${m.locatie}`;
-  return `<!DOCTYPE html><html lang="nl"><head><meta charset="UTF-8"></head>
+  const levering = m.leveringType === 'bezorg'
+    ? `Thuisbezorging naar: ${m.adres}`
+    : `Ophalen bij: ${m.locatie}`;
+
+  return `<!DOCTYPE html>
+<html lang="nl">
+<head><meta charset="UTF-8"></head>
 <body style="margin:0;padding:0;background:#f5f0e8;font-family:Georgia,serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f0e8;padding:40px 20px;">
     <tr><td align="center">
       <table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;overflow:hidden;max-width:600px;">
-        <tr><td style="background:#2d5016;padding:32px 40px;text-align:center;">
-          <p style="margin:0;color:#c8a86b;font-size:13px;letter-spacing:3px;text-transform:uppercase;">Ateliercuisine Rosier</p>
-          <h1 style="margin:8px 0 0;color:#fff;font-size:26px;font-weight:normal;">🐣 Paasbrunch Box 2026</h1>
-        </td></tr>
+        <tr>
+          <td style="padding:0;background-image:url('https://paasbox2026.netlify.app/AI_tafel_3.jpeg');background-size:cover;background-position:center top;">
+            <table width="100%" cellpadding="0" cellspacing="0"><tr>
+              <td align="center" valign="middle" style="padding:48px 40px;background:rgba(0,0,0,0.38);">
+                <img src="https://paasbox2026.netlify.app/logo.webp" alt="Ateliercuisine Rosier" width="160" style="display:block;margin:0 auto;height:auto;" />
+              </td>
+            </tr></table>
+          </td>
+        </tr>
         <tr><td style="padding:40px;">
           <p style="color:#4a3728;font-size:16px;margin:0 0 24px;">Beste ${m.naam},</p>
           <p style="color:#4a3728;font-size:16px;margin:0 0 32px;">Bedankt voor je bestelling! We kijken ernaar uit om jou een heerlijke Paasbrunch te bezorgen.</p>
@@ -109,8 +117,8 @@ function bevestigingsmailHtml(m) {
             <tr><td style="padding:8px 0;border-bottom:1px solid #e8dcc8;"><table width="100%"><tr><td style="color:#666;font-size:14px;font-family:Arial,sans-serif;">Datum</td><td align="right" style="color:#333;font-size:14px;font-family:Arial,sans-serif;">Paaszaterdag 4 april 2026</td></tr></table></td></tr>
             <tr><td style="padding:12px 0 0;"><table width="100%"><tr><td style="color:#2d5016;font-size:15px;font-weight:bold;font-family:Arial,sans-serif;">Totaal</td><td align="right" style="color:#2d5016;font-size:18px;font-weight:bold;font-family:Arial,sans-serif;">€ ${Number(m.bedrag).toLocaleString('nl-NL')} ✓</td></tr></table></td></tr>
           </table>
-          <p style="color:#4a3728;font-size:15px;margin:0 0 8px;">Heb je vragen? Neem contact op:</p>
-          <p style="margin:0;"><a href="mailto:paasbox2026@nielsrosier.nl" style="color:#2d5016;">paasbox2026@nielsrosier.nl</a></p>
+          <p style="color:#4a3728;font-size:15px;margin:0 0 8px;">Heb je vragen? Neem gerust contact op:</p>
+          <p style="margin:0;"><a href="mailto:paasbox2026@nielsrosier.nl" style="color:#2d5016;font-size:15px;">paasbox2026@nielsrosier.nl</a></p>
         </td></tr>
         <tr><td style="background:#f9f6f0;padding:24px 40px;text-align:center;border-top:1px solid #e8dcc8;">
           <p style="margin:0;color:#999;font-size:12px;font-family:Arial,sans-serif;">Niels Rosier · Ateliercuisine Rosier · <a href="https://www.nielsrosier.nl" style="color:#999;">nielsrosier.nl</a></p>
@@ -123,25 +131,12 @@ function bevestigingsmailHtml(m) {
 
 function bevestigingsmailTekst(m) {
   const levering = m.leveringType === 'bezorg' ? `Thuisbezorging naar: ${m.adres}` : `Ophalen bij: ${m.locatie}`;
-  return `Beste ${m.naam},\n\nBedankt voor je bestelling bij Ateliercuisine Rosier!\n\nBestelnummer: #${m.bestellingId}\nAantal: ${m.aantal} × Paasbrunch Box\n${levering}\nDatum: Paaszaterdag 4 april 2026\nTotaal: € ${Number(m.bedrag).toLocaleString('nl-NL')}\nStatus: ✓ Betaald\n\nVragen? paasbox2026@nielsrosier.nl\n\nMet vriendelijke groet,\nNiels Rosier\nAteliercuisine Rosier`;
+  return `Beste ${m.naam},\n\nBedankt voor je bestelling bij Ateliercuisine Rosier!\n\nBestelnummer: #${m.bestellingId}\nAantal: ${m.aantal} x Paasbrunch Box\n${levering}\nDatum: Paaszaterdag 4 april 2026\nTotaal: € ${Number(m.bedrag).toLocaleString('nl-NL')}\nStatus: Betaald\n\nVragen? paasbox2026@nielsrosier.nl\n\nMet vriendelijke groet,\nNiels Rosier\nAteliercuisine Rosier`;
 }
 
 function adminMailHtml(m) {
   const levering = m.leveringType === 'bezorg' ? `🚚 Bezorging → ${m.adres}` : `🏪 Ophalen → ${m.locatie}`;
-  return `<html><body style="font-family:Arial,sans-serif;background:#f5f5f5;padding:20px;">
-  <table width="560" style="background:#fff;border-radius:8px;padding:32px;">
-    <tr><td><h2 style="color:#2d5016;margin:0 0 20px;">🥚 Nieuwe betaalde bestelling</h2>
-    <table width="100%" cellpadding="6">
-      <tr style="background:#f9f6f0;"><td style="color:#666;font-size:13px;">Bestelnummer</td><td><b>#${m.bestellingId}</b></td></tr>
-      <tr><td style="color:#666;font-size:13px;">Naam</td><td>${m.naam}</td></tr>
-      <tr style="background:#f9f6f0;"><td style="color:#666;font-size:13px;">Email</td><td><a href="mailto:${m.email}">${m.email}</a></td></tr>
-      <tr><td style="color:#666;font-size:13px;">Telefoon</td><td>${m.telefoon || '—'}</td></tr>
-      <tr style="background:#f9f6f0;"><td style="color:#666;font-size:13px;">Aantal</td><td>${m.aantal}</td></tr>
-      <tr><td style="color:#666;font-size:13px;">Levering</td><td>${levering}</td></tr>
-      <tr style="background:#f9f6f0;"><td style="color:#666;font-size:13px;">Bedrag</td><td style="font-weight:bold;color:#2d5016;">€ ${Number(m.bedrag).toLocaleString('nl-NL')}</td></tr>
-    </table></td></tr>
-  </table>
-</body></html>`;
+  return `<html><body style="font-family:Arial,sans-serif;background:#f5f5f5;padding:20px;"><table width="560" style="background:#fff;border-radius:8px;padding:32px;"><tr><td><h2 style="color:#2d5016;margin:0 0 20px;">🥚 Nieuwe betaalde bestelling</h2><table width="100%" cellpadding="6"><tr style="background:#f9f6f0;"><td style="color:#666;font-size:13px;">Bestelnummer</td><td><b>#${m.bestellingId}</b></td></tr><tr><td style="color:#666;font-size:13px;">Naam</td><td>${m.naam}</td></tr><tr style="background:#f9f6f0;"><td style="color:#666;font-size:13px;">Email</td><td><a href="mailto:${m.email}">${m.email}</a></td></tr><tr><td style="color:#666;font-size:13px;">Telefoon</td><td>${m.telefoon || '—'}</td></tr><tr style="background:#f9f6f0;"><td style="color:#666;font-size:13px;">Aantal</td><td>${m.aantal}</td></tr><tr><td style="color:#666;font-size:13px;">Levering</td><td>${levering}</td></tr><tr style="background:#f9f6f0;"><td style="color:#666;font-size:13px;">Bedrag</td><td style="font-weight:bold;color:#2d5016;">€ ${Number(m.bedrag).toLocaleString('nl-NL')}</td></tr></table></td></tr></table></body></html>`;
 }
 
 function adminMailTekst(m) {
