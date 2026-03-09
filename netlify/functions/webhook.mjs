@@ -25,7 +25,11 @@ export const handler = async (event) => {
     const m = payment.metadata;
 
     // Sla bestelling op in Netlify Blobs
-    const store = getStore('bestellingen');
+    const store = getStore({
+      name: 'bestellingen',
+      siteID: process.env.NETLIFY_SITE_ID || '073b8f4e-de2d-4490-aa5e-6a96ddef7e5a',
+      token: process.env.NETLIFY_API_TOKEN
+    });
     const bestelling = {
       id: m.bestellingId,
       naam: m.naam,
@@ -92,7 +96,7 @@ function bevestigingsmailHtml(m) {
 
   return `<!DOCTYPE html>
 <html lang="nl">
-<head><meta charset="UTF-8"></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
 <body style="margin:0;padding:0;background:#f5f0e8;font-family:Georgia,serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f0e8;padding:40px 20px;">
     <tr><td align="center">
