@@ -24,7 +24,7 @@ export const handler = async (event) => {
     const payment = await mollie.payments.create({
       amount: { currency: 'EUR', value: Number(bedrag).toFixed(2) },
       description: `Paasbrunch Box #${bestellingId} — Ateliercuisine Rosier`,
-      redirectUrl: `${process.env.SITE_URL}/betaling-verwerkt?id=${bestellingId}`,
+      redirectUrl: `${process.env.SITE_URL}/betaling-verwerkt?id=${bestellingId}&mollieId=${payment.id}`,
       webhookUrl: `${process.env.SITE_URL}/.netlify/functions/webhook`,
       method: 'ideal',
       metadata: { bestellingId, naam, email, telefoon: telefoon || '', aantal, leveringType, locatie: locatie || '', adres: adres || '', bedrag }
