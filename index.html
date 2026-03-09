@@ -938,6 +938,57 @@
         document.getElementById('kpiBezorg').textContent = aantalBezorg;
         document.getElementById('kpiBestellingen').textContent = bestellingen.length;
 
+        // Actie-info
+        const locaties = [...new Set(bestellingen.filter(b=>b.leveringType==='ophaal').map(b=>b.locatie))];
+        const actieEl = document.getElementById('actieInfo');
+        if (actieEl) actieEl.textContent = totaalBoxen + ' boxen · ' + locaties.length + ' locatie' + (locaties.length !== 1 ? 's' : '') + ' · ' + aantalBezorg + ' bezorgadres' + (aantalBezorg !== 1 ? 'sen' : '');
+
+        // Boxen per locatie chart
+        const locatieMap = {};
+        bestellingen.forEach(b => {
+          const key = b.leveringType === 'bezorg' ? '🚚 Thuisbezorging' : (b.locatie || 'Onbekend');
+          locatieMap[key] = (locatieMap[key] || 0) + Number(b.aantal);
+        });
+        const kleuren = ['#a07840','#3a5a40','#3a5a8a','#cc0066','#7a5a30','#2a4a30'];
+        const maxBoxen = Math.max(...Object.values(locatieMap), 1);
+        const locatieDiv = document.getElementById('locatieStats');
+        if (locatieDiv) {
+          if (Object.keys(locatieMap).length === 0) {
+            locatieDiv.innerHTML = '<div style="color:var(--muted);font-size:12px;">Nog geen bestellingen.</div>';
+          } else {
+            locatieDiv.innerHTML = Object.entries(locatieMap).map(([naam, n], i) =>
+              `<div class="loc-item"><div class="loc-rij"><span>${naam}</span><strong>${n} box${n!==1?'en':''}</strong></div>
+              <div class="balk-bg"><div class="balk" style="width:${Math.round(n/maxBoxen*100)}%;background:${kleuren[i%kleuren.length]};"></div></div></div>`
+            ).join('');
+          }
+        }
+
+        // Bestellingen deze week chart
+        const dagen = ['Ma','Di','Wo','Do','Vr','Za','Zo'];
+        const weekTelling = [0,0,0,0,0,0,0];
+        const nu = new Date();
+        const dagVdWeek = (nu.getDay() + 6) % 7;
+        bestellingen.forEach(b => {
+          const d = new Date(b.timestamp);
+          const diff = Math.floor((nu - d) / 86400000);
+          const dagIdx = dagVdWeek - diff;
+          if (dagIdx >= 0 && dagIdx <= 6) weekTelling[dagIdx]++;
+        });
+        const maxWeek = Math.max(...weekTelling, 1);
+        const weekChartEl = document.getElementById('weekChart');
+        if (weekChartEl) {
+          weekChartEl.innerHTML = dagen.map((dag, i) => {
+            const h = Math.round(weekTelling[i] / maxWeek * 80);
+            const isVandaag = i === dagVdWeek;
+            return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;">
+              <div style="width:100%;background:${isVandaag?'#a07840':'#c8a96e'};border-radius:1px 1px 0 0;height:${h||2}px;opacity:${isVandaag?1:0.6};"></div>
+              <div style="font-size:10px;color:${isVandaag?'var(--tekst)':'var(--muted)'};font-weight:${isVandaag?'600':'400'};">${dag}</div>
+            </div>`;
+          }).join('');
+        }
+        const weekLabelEl = document.getElementById('weekLabel');
+        if (weekLabelEl) weekLabelEl.textContent = weekTelling.reduce((a,b)=>a+b,0) + ' bestellingen deze week';
+
         // Tabel
         tbody.innerHTML = '';
         if (bestellingen.length === 0) { geenMsg.style.display = 'block'; return; }
