@@ -913,10 +913,18 @@
   // ══════════════════════════════
   //  ADMIN DASHBOARD LADEN
   // ══════════════════════════════
+  let adminIngelogd = false;
+
   function laadAdmin() {
-    const bestellingen = dbLees();
+    if (!adminIngelogd) {
+      const pw = prompt('Admin wachtwoord:');
+      if (pw !== 'rosier2026admin') { alert('Onjuist wachtwoord.'); toonPaginaBtn('bestel'); return; }
+      adminIngelogd = true;
+    }
     const tbody = document.getElementById('bestellingenTabel');
     const geenMsg = document.getElementById('geenBestellingen');
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted);">Laden...</td></tr>';
+    fetch('/api/bestellingen?key=rosier2026admin').then(r=>r.json()).then(bestellingen=>{
 
     // KPI's berekenen
     const totaalBoxen = bestellingen.reduce((s,b) => s + b.aantal, 0);
@@ -1005,6 +1013,7 @@
         <td style="color:var(--muted);font-size:11px;">${b.datum}</td>`;
       tbody.appendChild(tr);
     });
+    }).catch(err=>{ tbody.innerHTML='<tr><td colspan="7" style="color:red;padding:16px;">Fout: '+err.message+'</td></tr>'; });
   }
 
   // ══════════════════════════════
