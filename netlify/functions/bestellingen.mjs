@@ -20,12 +20,11 @@ export const handler = async (event) => {
     const { blobs } = await store.list();
     const bestellingen = await Promise.all(
       blobs.map(async (blob) => {
-        const data = await store.getJSON(blob.key);
+        const data = await store.get(blob.key, { type: 'json' });
         return data;
       })
     );
 
-    // Sorteer op bestelnummer
     bestellingen.sort((a, b) => String(a.id).localeCompare(String(b.id)));
 
     return {
