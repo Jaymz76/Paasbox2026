@@ -784,7 +784,8 @@
     document.querySelectorAll('.pagina').forEach(p => p.classList.remove('actief'));
     document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
     document.getElementById('pagina-' + id).classList.add('actief');
-    document.querySelectorAll('.nav-tab')[map[id]].classList.add('active');
+    const tabEl = document.querySelectorAll('.nav-tab')[map[id]];
+    if (tabEl) tabEl.classList.add('active');
     window.scrollTo(0, 0);
     if (id === 'admin') laadAdmin();
   }
