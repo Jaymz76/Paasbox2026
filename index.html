@@ -735,9 +735,16 @@
     return bestelling.id;
   }
 
-  function genereerId() {
-    const bestellingen = dbLees();
-    return String(bestellingen.length + 1).padStart(3, '0');
+  async function genereerId() {
+    try {
+      const r = await fetch('/api/bestellingen?key=rosier2026admin');
+      const lijst = await r.json();
+      const max = lijst.reduce((m, b) => Math.max(m, parseInt(b.id) || 0), 0);
+      return String(max + 1).padStart(3, '0');
+    } catch(e) {
+      // Fallback: timestamp-gebaseerd uniek nummer
+      return String(Date.now()).slice(-4);
+    }
   }
 
   // ══════════════════════════════
@@ -844,7 +851,7 @@
     const totaal = aantal * PRIJS + extra;
     const nu = new Date();
     const datumStr = nu.getDate() + ' ' + ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'][nu.getMonth()];
-    const bestellingId = genereerId();
+    const bestellingId = await genereerId();
 
     // Bestelling alvast lokaal opslaan met status 'in afwachting'
     const bestelling = {
