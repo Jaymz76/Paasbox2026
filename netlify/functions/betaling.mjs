@@ -12,8 +12,7 @@ export const handler = async (event) => {
     body = JSON.parse(event.body);
   } catch {
     return { statusCode: 400, body: JSON.stringify({ error: 'Ongeldige JSON' }) };
-  }h
-
+  } }
   const { naam, email, telefoon, aantal, leveringType, locatie, adres, bedrag, bestellingId } = body;
 
   if (!naam || !email || !bedrag || !bestellingId) {
