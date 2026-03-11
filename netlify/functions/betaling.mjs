@@ -12,7 +12,7 @@ export const handler = async (event) => {
     body = JSON.parse(event.body);
   } catch {
     return { statusCode: 400, body: JSON.stringify({ error: 'Ongeldige JSON' }) };
-  }
+  }h
 
   const { naam, email, telefoon, aantal, leveringType, locatie, adres, bedrag, bestellingId } = body;
 
@@ -24,7 +24,7 @@ export const handler = async (event) => {
     const payment = await mollie.payments.create({
       amount: { currency: 'EUR', value: Number(bedrag).toFixed(2) },
       description: `Paasbrunch Box #${bestellingId} — Ateliercuisine Rosier`,
-      redirectUrl: `${process.env.SITE_URL}/betaling-verwerkt?id=${bestellingId}&mollieId=${payment.id}`,
+      redirectUrl: `${process.env.SITE_URL}/betaling-verwerkt?id=${bestellingId}`,
       webhookUrl: `${process.env.SITE_URL}/.netlify/functions/webhook`,
       method: 'ideal',
       metadata: { bestellingId, naam, email, telefoon: telefoon || '', aantal, leveringType, locatie: locatie || '', adres: adres || '', bedrag }
